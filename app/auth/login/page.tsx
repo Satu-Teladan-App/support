@@ -101,18 +101,20 @@ function LoginForm() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-6">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full text-center"
+          className="max-w-md w-full text-center border border-gray-100 p-12 bg-white rounded-lg shadow-2xl shadow-[#002587]/5"
         >
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-green-600" />
+          <div className="w-16 h-16 bg-green-50 rounded-lg flex items-center justify-center mx-auto mb-8">
+            <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h1 className="text-3xl font-black text-gray-900 mb-4">
+          <h1 className="text-2xl font-bold text-[#002587] mb-4 tracking-tight">
             Login Berhasil!
           </h1>
-          <p className="text-gray-600 mb-8">Mengalihkan ke halaman tujuan...</p>
-          <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto" />
+          <p className="text-gray-400 font-bold text-[10px] tracking-widest mb-10">
+            Mengalihkan ke halaman tujuan...
+          </p>
+          <Loader2 className="w-6 h-6 text-[#002587] animate-spin mx-auto" />
         </motion.div>
       </div>
     );
@@ -120,147 +122,121 @@ function LoginForm() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <nav className="border-b border-gray-200 px-6 py-4">
+      <nav className="border-b border-gray-50 px-8 py-6">
         <div className="container mx-auto flex items-center justify-between">
           <Link
             href="/"
-            className="text-xl font-bold tracking-wider text-gray-900"
+            className="text-lg font-bold tracking-tighter text-[#002587]"
           >
-            Satu Teladan App
+            Satu Teladan
           </Link>
           <Link
             href="/"
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+            className="flex items-center gap-2 text-gray-400 hover:text-[#002587] transition-all text-[10px] font-bold tracking-widest"
           >
-            <ArrowLeft size={18} />
-            Kembali
+            <ArrowLeft size={16} />
+            Back
           </Link>
         </div>
       </nav>
 
-      {/* Content */}
-      <div className="container mx-auto px-6 py-16">
+      <div className="container mx-auto px-6 py-24">
         <div className="max-w-md mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white border-2 border-gray-200 rounded-2xl p-8"
+            className="bg-white border border-gray-100 rounded-lg p-10 shadow-xl shadow-[#002587]/5"
           >
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Lock className="w-8 h-8 text-gray-600" />
+            <div className="text-center mb-10">
+              <div className="w-16 h-16 bg-[#002587] rounded-lg flex items-center justify-center mx-auto mb-6 shadow-lg shadow-[#002587]/20">
+                <Lock className="w-7 h-7 text-white" />
               </div>
-              <h1 className="text-3xl font-black text-gray-900 mb-2">Login</h1>
-              <p className="text-gray-600">Masuk ke akun Satu Teladan Anda</p>
+              <h1 className="text-3xl font-bold text-[#002587] mb-2 tracking-tight">Login Auth</h1>
+              <p className="text-[10px] font-bold text-gray-400 tracking-widest leading-loose">Akses Akun Satu Teladan</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Email Field */}
               <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-semibold text-gray-900 mb-2"
-                >
-                  Email
-                </label>
+                <label className="block text-[10px] font-bold text-gray-400 tracking-[0.2em] mb-4">Email Address</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Mail className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
                   <input
                     type="email"
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="nama@email.com"
-                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-gray-900 focus:outline-none transition-colors text-gray-900"
+                    className="w-full pl-8 pr-4 py-4 bg-white border-b border-gray-100 focus:border-[#002587] transition-all outline-none text-gray-900 font-bold text-xs tracking-wider placeholder:text-gray-200"
                     required
                   />
                 </div>
               </div>
 
-              {/* Password Field */}
               <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-semibold text-gray-900 mb-2"
-                >
-                  Password
-                </label>
+                <label className="block text-[10px] font-bold text-gray-400 tracking-[0.2em] mb-4">Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Lock className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
                   <input
                     type={showPassword ? "text" : "password"}
                     id="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Masukkan password"
-                    className="w-full pl-11 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:border-gray-900 focus:outline-none transition-colors text-gray-900"
+                    placeholder="••••••••"
+                    className="w-full pl-8 pr-12 py-4 bg-white border-b border-gray-100 focus:border-[#002587] transition-all outline-none text-gray-900 font-bold text-xs tracking-wider placeholder:text-gray-200"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-300 hover:text-[#002587] transition-colors"
                   >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">Minimal 6 karakter</p>
+                <div className="flex justify-between items-center mt-3">
+                  <p className="text-[9px] font-bold text-gray-300 tracking-widest">Minimal 6 karakter</p>
+                  <Link
+                    href="/auth/forgot-password"
+                    className="text-[9px] font-bold text-[#002587] tracking-widest hover:text-[#001d6b] transition-colors"
+                  >
+                    Lupa password?
+                  </Link>
+                </div>
               </div>
 
-              {/* Error Message */}
               {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"
-                >
-                  {error}
-                </motion.div>
+                <div className="p-4 bg-red-50 border border-red-100 rounded-lg">
+                  <p className="text-red-500 text-[10px] font-bold tracking-widest line-clamp-2 uppercase leading-relaxed">{error}</p>
+                </div>
               )}
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={!isFormValid || isLoading}
-                className={`w-full py-4 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2 ${
-                  isFormValid && !isLoading
-                    ? "bg-gray-900 hover:bg-gray-800 text-white cursor-pointer"
-                    : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                }`}
+                className="w-full py-5 bg-[#002587] text-white rounded-lg font-bold text-[11px] tracking-[0.3em] hover:bg-[#001d6b] transition-all flex items-center justify-center gap-3 cursor-pointer shadow-xl shadow-[#002587]/20 disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none"
               >
                 {isLoading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Memproses...
-                  </>
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <>
-                    <Lock className="w-5 h-5" />
-                    Login
-                  </>
+                  "Login Sekarang"
                 )}
               </button>
 
-              {/* Divider */}
-              <div className="relative">
+              <div className="relative py-4">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200"></div>
+                  <div className="w-full border-t border-gray-50"></div>
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-gray-500">
-                    Atau login dengan
-                  </span>
+                <div className="relative flex justify-center text-[9px] font-bold tracking-[0.3em] text-gray-300">
+                  <span className="px-6 bg-white">Atau masuk dengan</span>
                 </div>
               </div>
 
-              {/* Google Login Button */}
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                className="w-full py-3 px-4 border-2 border-gray-200 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-3"
+                className="w-full py-4 border border-gray-100 text-gray-500 rounded-lg font-bold text-[10px] tracking-[0.3em] hover:bg-gray-50 transition-all flex items-center justify-center gap-3 cursor-pointer shadow-sm"
               >
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path
                     fill="currentColor"
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -278,48 +254,34 @@ function LoginForm() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                Login dengan Google
+                Google Account
               </button>
 
-              {/* Register Link */}
-              <p className="text-center text-gray-600">
-                Belum punya akun?{" "}
-                <Link
-                  href="/auth/register"
-                  className="text-gray-900 font-semibold hover:underline"
-                >
-                  Daftar sekarang
-                </Link>
-              </p>
-
-              {/* Forgot Password Link */}
-              <p className="text-center text-sm">
-                <Link
-                  href="/auth/forgot-password"
-                  className="text-gray-600 hover:text-gray-900 hover:underline"
-                >
-                  Lupa password?
-                </Link>
-              </p>
+              <div className="text-center mt-10">
+                <p className="text-[10px] font-bold text-gray-400 tracking-widest leading-loose">
+                  Belum punya akun?{" "}
+                  <Link
+                    href="/auth/register"
+                    className="text-[#002587] border-b border-[#002587] pb-0.5 ml-2 hover:text-[#001d6b] transition-all"
+                  >
+                    Daftar Sekarang
+                  </Link>
+                </p>
+              </div>
             </form>
           </motion.div>
 
-          {/* Help Text */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-center text-gray-500 text-sm mt-8"
-          >
-            Butuh bantuan? Hubungi{" "}
-            <a
-              href="mailto:katymentor@gmail.com"
-              className="text-gray-900 font-medium hover:underline"
-            >
-              katymentor@gmail.com
-            </a>{" "}
-            untuk support.
-          </motion.p>
+          <footer className="text-center mt-16">
+            <p className="text-gray-300 text-[9px] font-bold tracking-[0.3em] leading-relaxed">
+              Butuh bantuan? Hubungi{" "}
+              <a
+                href="mailto:katymentor@gmail.com"
+                className="text-[#002587] border-b border-[#002587] hover:text-[#001d6b] transition-all"
+              >
+                Our Support Team
+              </a>
+            </p>
+          </footer>
         </div>
       </div>
     </div>

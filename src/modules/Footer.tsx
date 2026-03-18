@@ -6,13 +6,13 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="relative bg-white border-t border-gray-200">
+    <footer className="relative bg-white border-t border-gray-50 overflow-hidden">
       {/* Subtle Grid Pattern */}
-      <div className="absolute inset-0 bg-grid-subtle opacity-20 pointer-events-none" />
+      <div className="absolute inset-0 bg-grid-subtle opacity-10 pointer-events-none" />
 
-      <div className="container mx-auto px-6 py-16 relative z-10">
+      <div className="container mx-auto px-6 py-20 relative z-10">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-20">
           {/* Brand Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -21,68 +21,52 @@ export default function Footer() {
             viewport={{ once: true }}
             className="lg:col-span-2"
           >
-            <h3 className="text-3xl md:text-4xl font-black tracking-wider text-gray-900 mb-4">
-              SATU TELADAN
+            <h3 className="text-3xl md:text-4xl font-bold tracking-tighter text-[#002587] mb-6 animate-fade-in">
+              Satu Teladan
             </h3>
-            <p className="text-lg text-gray-600 leading-relaxed mb-6 max-w-md">
+            <p className="text-sm text-gray-400 leading-relaxed mb-10 max-w-sm tracking-widest font-bold opacity-70">
               Aplikasi resmi keluarga besar SMA Negeri 1 Yogyakarta.
               Menghubungkan alumni, siswa, guru, dan orang tua dalam satu
               platform untuk membangun jaringan yang kuat dan bermakna.
             </p>
 
-            {/* Download Badges */}
-            <div className="flex flex-wrap gap-3 mb-6">
+            <div className="flex flex-wrap gap-4 mb-10">
               <a
                 href="https://apps.apple.com/app/satu-teladan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-[#002587] text-white rounded-lg hover:bg-[#001d6b] transition-all text-[10px] font-bold tracking-[0.3em] shadow-lg shadow-[#002587]/20"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-5 h-5"
-                  fill="currentColor"
-                >
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
-                </svg>
                 App Store
               </a>
               <a
                 href="https://play.google.com/store/apps/details?id=com.satuteladan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-white text-[#002587] border border-[#002587]/20 rounded-lg hover:bg-gray-50 transition-all text-[10px] font-bold tracking-[0.3em] shadow-md"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-5 h-5"
-                  fill="currentColor"
-                >
-                  <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" />
-                </svg>
                 Play Store
               </a>
             </div>
 
-            {/* Social Links */}
-            <div className="flex space-x-4">
+            <div className="flex space-x-5">
               <a
                 href="https://www.instagram.com/satuteladan/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-12 h-12 bg-gray-900 hover:bg-gray-700 text-white rounded-full flex items-center justify-center transition-colors duration-300"
-                aria-label="Ikuti kami di Instagram"
+                className="w-12 h-12 bg-white border border-gray-100 hover:border-[#002587] text-gray-400 hover:text-[#002587] rounded-lg flex items-center justify-center transition-all shadow-sm"
+                aria-label="Instagram"
               >
-                <Instagram size={20} />
+                <Instagram size={18} />
               </a>
               <a
                 href="https://www.facebook.com/satuteladan/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-12 h-12 bg-gray-900 hover:bg-gray-700 text-white rounded-full flex items-center justify-center transition-colors duration-300"
-                aria-label="Ikuti kami di Facebook"
+                className="w-12 h-12 bg-white border border-gray-100 hover:border-[#002587] text-gray-400 hover:text-[#002587] rounded-lg flex items-center justify-center transition-all shadow-sm"
+                aria-label="Facebook"
               >
-                <Facebook size={20} />
+                <Facebook size={18} />
               </a>
             </div>
           </motion.div>
@@ -94,14 +78,22 @@ export default function Footer() {
             transition={{ duration: 0.6, delay: 0.1 }}
             viewport={{ once: true }}
           >
-            <h4 className="text-xl font-bold text-gray-900 mb-6 tracking-wide">
-              TAUTAN
+            <h4 className="text-[10px] font-bold text-gray-300 mb-10 tracking-[0.5em]">
+              Tautan
             </h4>
-            <ul className="space-y-3">
+            <ul className="space-y-5">
+              <li>
+                <a
+                  href="#hero"
+                  className="text-[10px] text-gray-400 hover:text-[#002587] transition-all font-bold tracking-[0.2em]"
+                >
+                  Beranda
+                </a>
+              </li>
               <li>
                 <a
                   href="#tentang"
-                  className="text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium"
+                  className="text-[10px] text-gray-400 hover:text-[#002587] transition-all font-bold tracking-[0.2em]"
                 >
                   Tentang Aplikasi
                 </a>
@@ -109,31 +101,23 @@ export default function Footer() {
               <li>
                 <a
                   href="#fitur"
-                  className="text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium"
+                  className="text-[10px] text-gray-400 hover:text-[#002587] transition-all font-bold tracking-[0.2em]"
                 >
-                  Fitur
+                  Fitur Unggulan
                 </a>
               </li>
               <li>
                 <a
                   href="#testimoni"
-                  className="text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium"
+                  className="text-[10px] text-gray-400 hover:text-[#002587] transition-all font-bold tracking-[0.2em]"
                 >
-                  Testimoni
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#download"
-                  className="text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium"
-                >
-                  Download
+                  Testimoni Alumni
                 </a>
               </li>
               <li>
                 <Link
                   href="/hapusakun"
-                  className="text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium"
+                  className="text-[10px] text-red-400 hover:text-red-500 transition-all font-bold tracking-[0.2em]"
                 >
                   Hapus Akun
                 </Link>
@@ -148,24 +132,24 @@ export default function Footer() {
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
           >
-            <h4 className="text-xl font-bold text-gray-900 mb-6 tracking-wide">
-              KONTAK
+            <h4 className="text-[10px] font-bold text-gray-300 mb-10 tracking-[0.5em]">
+              Kontak
             </h4>
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3">
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4">
                 <MapPin
-                  size={18}
-                  className="text-gray-600 mt-1 flex-shrink-0"
+                  size={16}
+                  className="text-[#002587] mt-0.5 flex-shrink-0"
                 />
-                <span className="text-gray-600 font-medium">
+                <span className="text-[10px] text-gray-400 font-bold tracking-widest leading-loose">
                   Yogyakarta, Indonesia
                 </span>
               </div>
-              <div className="flex items-center space-x-3">
-                <Mail size={18} className="text-gray-600" />
+              <div className="flex items-center space-x-4">
+                <Mail size={16} className="text-[#002587] flex-shrink-0" />
                 <a
                   href="mailto:katymentor@gmail.com"
-                  className="text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium"
+                  className="text-[10px] text-gray-400 hover:text-[#002587] transition-all font-bold tracking-widest"
                 >
                   katymentor@gmail.com
                 </a>
@@ -180,34 +164,30 @@ export default function Footer() {
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
           viewport={{ once: true }}
-          className="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0"
+          className="border-t border-gray-50 pt-10 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0"
         >
-          <p className="text-gray-600 font-medium">
-            © 2024 Satu Teladan. Hak Cipta Dilindungi.
+          <p className="text-[10px] font-bold text-gray-300 tracking-widest">
+            © 2026 Satu Teladan. Hak Cipta Dilindungi.
           </p>
 
-          <div className="flex space-x-6">
+          <div className="flex space-x-8">
             <a
               href="#"
-              className="text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium"
+              className="text-[10px] font-bold text-gray-300 hover:text-[#002587] transition-all tracking-widest"
             >
               Kebijakan Privasi
             </a>
             <a
               href="#"
-              className="text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium"
+              className="text-[10px] font-bold text-gray-300 hover:text-[#002587] transition-all tracking-widest"
             >
               Syarat & Ketentuan
             </a>
-            <Link
-              href="/hapusakun"
-              className="text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium"
-            >
-              Hapus Akun
-            </Link>
           </div>
         </motion.div>
+
       </div>
     </footer>
+
   );
 }

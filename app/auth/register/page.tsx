@@ -84,31 +84,30 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-6">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full text-center"
+          className="max-w-md w-full text-center border border-gray-100 p-12 bg-white rounded-lg shadow-2xl shadow-[#002587]/5"
         >
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-green-600" />
+          <div className="w-16 h-16 bg-green-50 rounded-lg flex items-center justify-center mx-auto mb-8">
+            <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h1 className="text-3xl font-black text-gray-900 mb-4">
+          <h1 className="text-2xl font-bold text-[#002587] mb-4 tracking-tight">
             Registrasi Berhasil!
           </h1>
-          <p className="text-gray-600 mb-8">
-            Kami telah mengirimkan email verifikasi ke <strong>{email}</strong>.
-            Silakan cek inbox Anda dan klik link verifikasi untuk mengaktifkan
-            akun.
+          <p className="text-sm text-gray-400 font-bold tracking-widest leading-loose mb-10 opacity-70">
+            Kami telah mengirimkan email verifikasi ke <strong className="text-[#002587]">{email}</strong>.
+            Silakan cek inbox anda untuk mengaktifkan akun.
           </p>
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Link
               href="/auth/login"
-              className="block w-full px-6 py-3 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
+              className="block w-full py-5 bg-[#002587] text-white font-bold rounded-lg hover:bg-[#001d6b] transition-all tracking-[0.2em] text-[11px] shadow-xl shadow-[#002587]/20"
             >
               Kembali ke Login
             </Link>
             <Link
               href="/"
-              className="block text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              className="block text-[10px] text-gray-400 hover:text-[#002587] font-bold tracking-widest transition-all"
             >
               Kembali ke Beranda
             </Link>
@@ -121,38 +120,38 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <nav className="border-b border-gray-200 px-6 py-4">
+      <nav className="border-b border-gray-50 px-8 py-6">
         <div className="container mx-auto flex items-center justify-between">
           <Link
             href="/"
-            className="text-xl font-bold tracking-wider text-gray-900"
+            className="text-lg font-bold tracking-tighter text-[#002587]"
           >
-            Satu Teladan App
+            Satu Teladan
           </Link>
           <Link
             href="/"
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+            className="flex items-center gap-2 text-gray-400 hover:text-[#002587] transition-all text-[10px] font-bold tracking-widest"
           >
-            <ArrowLeft size={18} />
-            Kembali
+            <ArrowLeft size={16} />
+            Back
           </Link>
         </div>
       </nav>
 
       {/* Content */}
-      <div className="container mx-auto px-6 py-16">
+      <div className="container mx-auto px-6 py-24">
         <div className="max-w-md mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white border-2 border-gray-200 rounded-2xl p-8"
+            className="bg-white border border-gray-100 rounded-lg p-10 shadow-xl shadow-[#002587]/5"
           >
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <UserPlus className="w-8 h-8 text-gray-600" />
+            <div className="text-center mb-10">
+              <div className="w-16 h-16 bg-[#002587] rounded-lg flex items-center justify-center mx-auto mb-6 shadow-lg shadow-[#002587]/20">
+                <UserPlus className="w-7 h-7 text-white" />
               </div>
-              <h1 className="text-3xl font-black text-gray-900 mb-2">Daftar</h1>
-              <p className="text-gray-600">Buat akun Satu Teladan baru</p>
+              <h1 className="text-3xl font-bold text-[#002587] mb-2 tracking-tight">Akun Baru</h1>
+              <p className="text-[10px] font-bold text-gray-400 tracking-widest leading-loose">Buat Akun Satu Teladan Anda</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -160,19 +159,19 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-semibold text-gray-900 mb-2"
+                  className="block text-[10px] font-bold text-gray-400 tracking-[0.2em] mb-4"
                 >
-                  Email
+                  Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Mail className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
                   <input
                     type="email"
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="nama@email.com"
-                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-gray-900 focus:outline-none transition-colors text-gray-900"
+                    className="w-full pl-8 pr-4 py-4 bg-white border-b border-gray-100 focus:border-[#002587] transition-all outline-none text-gray-900 font-bold text-xs tracking-wider placeholder:text-gray-200"
                     required
                   />
                 </div>
@@ -182,27 +181,27 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-sm font-semibold text-gray-900 mb-2"
+                  className="block text-[10px] font-bold text-gray-400 tracking-[0.2em] mb-4"
                 >
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Lock className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
                   <input
                     type={showPassword ? "text" : "password"}
                     id="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Minimal 6 karakter"
-                    className="w-full pl-11 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:border-gray-900 focus:outline-none transition-colors text-gray-900"
+                    placeholder="••••••••"
+                    className="w-full pl-8 pr-12 py-4 bg-white border-b border-gray-100 focus:border-[#002587] transition-all outline-none text-gray-900 font-bold text-xs tracking-wider placeholder:text-gray-200"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-300 hover:text-[#002587] transition-colors"
                   >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
@@ -211,35 +210,35 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="confirmPassword"
-                  className="block text-sm font-semibold text-gray-900 mb-2"
+                  className="block text-[10px] font-bold text-gray-400 tracking-[0.2em] mb-4"
                 >
                   Konfirmasi Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Lock className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     id="confirmPassword"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Ketik ulang password"
-                    className="w-full pl-11 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:border-gray-900 focus:outline-none transition-colors text-gray-900"
+                    placeholder="••••••••"
+                    className="w-full pl-8 pr-12 py-4 bg-white border-b border-gray-100 focus:border-[#002587] transition-all outline-none text-gray-900 font-bold text-xs tracking-wider placeholder:text-gray-200"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-300 hover:text-[#002587] transition-colors"
                   >
                     {showConfirmPassword ? (
-                      <EyeOff size={20} />
+                      <EyeOff size={18} />
                     ) : (
-                      <Eye size={20} />
+                      <Eye size={18} />
                     )}
                   </button>
                 </div>
                 {confirmPassword && password !== confirmPassword && (
-                  <p className="text-sm text-red-600 mt-1">
+                  <p className="text-[9px] font-bold text-red-500 tracking-widest mt-3">
                     Password tidak cocok
                   </p>
                 )}
@@ -247,74 +246,52 @@ export default function RegisterPage() {
 
               {/* Error Message */}
               {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"
-                >
-                  {error}
-                </motion.div>
+                <div className="p-4 bg-red-50 border border-red-100 rounded-lg">
+                  <p className="text-red-500 text-[10px] font-bold tracking-widest line-clamp-2 uppercase leading-relaxed">{error}</p>
+                </div>
               )}
 
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={!isFormValid || isLoading}
-                className={`w-full py-4 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2 ${
-                  isFormValid && !isLoading
-                    ? "bg-gray-900 hover:bg-gray-800 text-white cursor-pointer"
-                    : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                }`}
+                className="w-full py-5 bg-[#002587] text-white rounded-lg font-bold text-[11px] tracking-[0.3em] hover:bg-[#001d6b] transition-all flex items-center justify-center gap-3 cursor-pointer shadow-xl shadow-[#002587]/20 disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none"
               >
                 {isLoading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Memproses...
-                  </>
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <>
-                    <UserPlus className="w-5 h-5" />
-                    Daftar
-                  </>
+                  "Daftar Sekarang"
                 )}
               </button>
 
               {/* Login Link */}
-              <p className="text-center text-gray-600">
-                Sudah punya akun?{" "}
-                <Link
-                  href="/auth/login"
-                  className="text-gray-900 font-semibold hover:underline"
-                >
-                  Login sekarang
-                </Link>
-              </p>
+              <div className="text-center mt-10">
+                <p className="text-[10px] font-bold text-gray-400 tracking-widest leading-loose">
+                  Sudah punya akun?{" "}
+                  <Link
+                    href="/auth/login"
+                    className="text-[#002587] border-b border-[#002587] pb-0.5 ml-2 hover:text-[#001d6b] transition-all"
+                  >
+                    Masuk Sekarang
+                  </Link>
+                </p>
+              </div>
             </form>
           </motion.div>
 
           {/* Help Text */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-center text-gray-500 text-sm mt-8"
-          >
-            Dengan mendaftar, Anda menyetujui{" "}
-            <a
-              href="/terms"
-              className="text-gray-900 font-medium hover:underline"
-            >
-              Syarat & Ketentuan
-            </a>{" "}
-            dan{" "}
-            <a
-              href="/privacy"
-              className="text-gray-900 font-medium hover:underline"
-            >
-              Kebijakan Privasi
-            </a>{" "}
-            kami.
-          </motion.p>
+          <footer className="text-center mt-12">
+            <p className="text-gray-300 text-[9px] font-bold tracking-[0.3em] leading-relaxed max-w-xs mx-auto">
+              Dengan mendaftar, anda menyetujui{" "}
+              <Link href="/terms" className="text-[#002587] hover:text-[#001d6b] transition-all">
+                Syarat & Ketentuan
+              </Link>{" "}
+              dan{" "}
+              <Link href="/privacy" className="text-[#002587] hover:text-[#001d6b] transition-all">
+                Kebijakan Privasi
+              </Link>
+            </p>
+          </footer>
         </div>
       </div>
     </div>

@@ -129,58 +129,47 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ position, testimonial
     <div
       onClick={() => handleMove(position)}
       className={cn(
-        "absolute left-1/2 top-1/2 cursor-pointer border-2 p-8 transition-all duration-500 ease-in-out",
+        "absolute left-1/2 top-1/2 cursor-pointer border-2 p-10 transition-all duration-700 ease-in-out rounded-lg shadow-2xl",
         isCenter
-          ? "z-10 bg-gray-900 text-white border-gray-900"
-          : "z-0 bg-white text-gray-900 border-gray-200 hover:border-gray-400",
+          ? "z-10 bg-[#002587] text-white border-[#002587] shadow-[#002587]/20 scale-100"
+          : "z-0 bg-white text-gray-400 border-gray-100 hover:border-[#002587]/20 hover:text-gray-600 scale-90",
       )}
       style={{
         width: cardSize,
         height: cardSize,
-        clipPath: `polygon(50px 0%, calc(100% - 50px) 0%, 100% 50px, 100% 100%, calc(100% - 50px) 100%, 50px 100%, 0 100%, 0 0)`,
         transform: `
           translate(-50%, -50%) 
-          translateX(${(cardSize / 1.5) * position}px)
-          translateY(${isCenter ? -65 : position % 2 ? 15 : -15}px)
-          rotate(${isCenter ? 0 : position % 2 ? 2.5 : -2.5}deg)
+          translateX(${(cardSize / 1.4) * position}px)
+          translateY(${isCenter ? -80 : position % 2 ? 20 : -20}px)
+          rotate(${isCenter ? 0 : position % 2 ? 3 : -3}deg)
         `,
-        boxShadow: isCenter ? "0px 8px 0px 4px hsl(var(--border))" : "0px 0px 0px 0px transparent",
       }}
     >
-      <span
-        className="absolute block origin-top-right rotate-45 bg-gray-300"
-        style={{
-          right: -2,
-          top: 48,
-          width: SQRT_5000,
-          height: 2,
-        }}
-      />
-      <img
-        src={testimonial.imgSrc || "/placeholder.svg"}
-        alt={`${testimonial.by.split(",")[0]}`}
-        className="mb-4 h-14 w-12 bg-gray-100 object-cover object-top"
-        style={{
-          boxShadow: "3px 3px 0px hsl(var(--background))",
-        }}
-      />
-      <h3 className={cn("text-base sm:text-xl font-medium", isCenter ? "text-white" : "text-gray-900")}>
-        "{testimonial.testimonial}"
+      <div className="relative">
+        <img
+          src={testimonial.imgSrc || "/placeholder.svg"}
+          alt={`${testimonial.by.split(",")[0]}`}
+          className="mb-8 h-16 w-16 rounded-lg bg-gray-100 object-cover object-top shadow-lg grayscale group-hover:grayscale-0 transition-all"
+        />
+        <div className={cn("absolute -top-4 -left-4 w-8 h-8 rounded-lg flex items-center justify-center font-black text-2xl opacity-20", isCenter ? "text-white" : "text-[#002587]")}>"</div>
+      </div>
+      <h3 className={cn("text-lg sm:text-2xl font-bold leading-tight uppercase tracking-tight", isCenter ? "text-white" : "text-[#002587]")}>
+        {testimonial.testimonial}
       </h3>
       <p
         className={cn(
-          "absolute bottom-8 left-8 right-8 mt-2 text-sm italic",
-          isCenter ? "text-gray-300" : "text-gray-600",
+          "absolute bottom-10 left-10 right-10 text-[10px] font-bold uppercase tracking-[0.2em]",
+          isCenter ? "text-white/60" : "text-gray-400",
         )}
       >
-        - {testimonial.by}
+        — {testimonial.by}
       </p>
     </div>
   )
 }
 
 export const StaggerTestimonials: React.FC = () => {
-  const [cardSize, setCardSize] = useState(365)
+  const [cardSize, setCardSize] = useState(400)
   const [testimonialsList, setTestimonialsList] = useState(testimonials)
 
   const handleMove = (steps: number) => {
@@ -204,7 +193,7 @@ export const StaggerTestimonials: React.FC = () => {
   useEffect(() => {
     const updateSize = () => {
       const { matches } = window.matchMedia("(min-width: 640px)")
-      setCardSize(matches ? 365 : 290)
+      setCardSize(matches ? 400 : 320)
     }
     updateSize()
     window.addEventListener("resize", updateSize)
@@ -212,7 +201,7 @@ export const StaggerTestimonials: React.FC = () => {
   }, [])
 
   return (
-    <div className="relative w-full overflow-hidden bg-white" style={{ height: 600 }}>
+    <div className="relative w-full overflow-hidden bg-white" style={{ height: 650 }}>
       {testimonialsList.map((testimonial, index) => {
         const position =
           testimonialsList.length % 2 ? index - (testimonialsList.length + 1) / 2 : index - testimonialsList.length / 2
@@ -226,28 +215,26 @@ export const StaggerTestimonials: React.FC = () => {
           />
         )
       })}
-      <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
+      <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-4">
         <button
           onClick={() => handleMove(-1)}
           className={cn(
-            "flex h-14 w-14 items-center justify-center text-2xl transition-colors",
-            "bg-white border-2 border-gray-300 hover:bg-gray-900 hover:text-white",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2",
+            "flex h-16 w-16 items-center justify-center transition-all rounded-lg shadow-xl",
+            "bg-white border border-gray-100 text-[#002587] hover:bg-[#002587] hover:text-white",
           )}
           aria-label="Testimoni sebelumnya"
         >
-          <ChevronLeft />
+          <ChevronLeft size={24} />
         </button>
         <button
           onClick={() => handleMove(1)}
           className={cn(
-            "flex h-14 w-14 items-center justify-center text-2xl transition-colors",
-            "bg-white border-2 border-gray-300 hover:bg-gray-900 hover:text-white",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2",
+            "flex h-16 w-16 items-center justify-center transition-all rounded-lg shadow-xl",
+            "bg-white border border-gray-100 text-[#002587] hover:bg-[#002587] hover:text-white",
           )}
           aria-label="Testimoni berikutnya"
         >
-          <ChevronRight />
+          <ChevronRight size={24} />
         </button>
       </div>
     </div>

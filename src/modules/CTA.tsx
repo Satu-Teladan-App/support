@@ -6,119 +6,60 @@ import { MapPin, Users, Calendar, Trophy } from "lucide-react"
 
 export default function CTASection() {
   return (
-    <section className="relative py-32 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
-      {/* Subtle Grid Pattern */}
-      <div className="absolute inset-0 bg-grid-subtle opacity-20 pointer-events-none" />
-
-      {/* Background Elements */}
-      <div className="absolute top-20 left-10 w-32 h-32 bg-gray-900/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 right-10 w-40 h-40 bg-gray-900/5 rounded-full blur-3xl" />
-
+    <section className="relative py-40 bg-white overflow-hidden border-t border-gray-100">
       <div className="container mx-auto px-6 relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true }}
-          className="text-center max-w-4xl mx-auto"
+          className="text-center max-w-5xl mx-auto"
         >
-          {/* Main CTA Heading */}
-          <h2 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-wider mb-6 text-gray-900 leading-none">
-            READY TO
-            <br />
-            <span className="bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 bg-clip-text text-transparent">
-              RUN WITH US?
-            </span>
+          <h2 className="text-6xl md:text-8xl font-bold tracking-tight mb-8 text-[#002587] leading-none animate-fade-in">
+            Satu Teladan
           </h2>
 
-          {/* Supporting Text */}
-          <p className="text-xl md:text-2xl lg:text-3xl text-gray-700 mb-12 leading-relaxed font-medium">
-            Join thousands of runners worldwide who've found their tribe,
-            <br className="hidden md:block" />
-            pushed their limits, and discovered what they're truly capable of.
+          <p className="text-sm md:text-base text-gray-400 mb-16 max-w-2xl mx-auto tracking-[0.2em] font-bold leading-relaxed opacity-70">
+            Membangun Jaringan Keluarga Besar SMA Negeri 1 Yogyakarta yang Lebih Kuat dan Bermakna.
           </p>
 
-          {/* Stats Grid */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            viewport={{ once: true }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16"
-          >
-            <div className="text-center">
-              <div className="flex justify-center mb-3">
-                <div className="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <div className="text-3xl md:text-4xl font-black text-gray-900 mb-1">50K+</div>
-              <div className="text-sm md:text-base text-gray-600 font-medium">Global Runners</div>
-            </div>
-
-            <div className="text-center">
-              <div className="flex justify-center mb-3">
-                <div className="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center">
-                  <MapPin className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <div className="text-3xl md:text-4xl font-black text-gray-900 mb-1">120+</div>
-              <div className="text-sm md:text-base text-gray-600 font-medium">Cities Worldwide</div>
-            </div>
-
-            <div className="text-center">
-              <div className="flex justify-center mb-3">
-                <div className="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <div className="text-3xl md:text-4xl font-black text-gray-900 mb-1">365</div>
-              <div className="text-sm md:text-base text-gray-600 font-medium">Days of Running</div>
-            </div>
-
-            <div className="text-center">
-              <div className="flex justify-center mb-3">
-                <div className="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center">
-                  <Trophy className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <div className="text-3xl md:text-4xl font-black text-gray-900 mb-1">10K+</div>
-              <div className="text-sm md:text-base text-gray-600 font-medium">Goals Achieved</div>
-            </div>
-          </motion.div>
-
-          {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            viewport={{ once: true }}
-            className="flex justify-center"
-          >
-            <LiquidButton
-              size="xxl"
-              className="font-bold text-xl tracking-wide px-12 py-4 bg-gray-900 hover:bg-gray-800 text-white border-2 border-gray-900 hover:scale-105 transition-all duration-300"
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-32">
+            <a
+              href="https://apps.apple.com/app/satu-teladan"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-14 py-6 bg-[#002587] text-white rounded-lg font-bold text-[11px] tracking-[0.2em] hover:bg-[#001d6b] transition-all shadow-xl shadow-[#002587]/20 border border-transparent"
             >
-              JOIN WADADA NOW
-            </LiquidButton>
-          </motion.div>
+              App Store
+            </a>
+            <a
+              href="https://play.google.com/store/apps/details?id=com.satuteladan"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-14 py-6 bg-white text-[#002587] rounded-lg font-bold text-[11px] tracking-[0.2em] hover:bg-gray-50 transition-all border border-[#002587]/20 shadow-lg"
+            >
+              Play Store
+            </a>
+          </div>
 
-          {/* Trust Indicators */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            viewport={{ once: true }}
-            className="mt-16 pt-8 border-t border-gray-200"
-          >
-            <p className="text-sm text-gray-500 mb-4 font-medium">TRUSTED BY RUNNERS WORLDWIDE</p>
-            <div className="flex flex-wrap justify-center items-center gap-8 text-gray-400">
-              <span className="text-sm font-semibold">🏃‍♀️ BEGINNER FRIENDLY</span>
-              <span className="text-sm font-semibold">🌍 GLOBAL COMMUNITY</span>
-              <span className="text-sm font-semibold">🏆 PROVEN RESULTS</span>
-              <span className="text-sm font-semibold">💯 FREE TO JOIN</span>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 pt-24 border-t border-gray-50">
+            <div className="text-center px-4">
+              <div className="text-4xl md:text-5xl font-bold text-[#002587] mb-3 tracking-tighter relative inline-block">50K+</div>
+              <div className="text-[10px] font-bold text-gray-400 tracking-[0.2em] mt-1 opacity-60">Total Alumni</div>
             </div>
-          </motion.div>
+            <div className="text-center px-4 border-l border-gray-50">
+              <div className="text-4xl md:text-5xl font-bold text-[#002587] mb-3 tracking-tighter relative inline-block">120+</div>
+              <div className="text-[10px] font-bold text-gray-400 tracking-[0.2em] mt-1 opacity-60">Komunitas</div>
+            </div>
+            <div className="text-center px-4 border-l border-gray-50">
+              <div className="text-4xl md:text-5xl font-bold text-[#002587] mb-3 tracking-tighter relative inline-block">365</div>
+              <div className="text-[10px] font-bold text-gray-400 tracking-[0.2em] mt-1 opacity-60">Akses Penuh</div>
+            </div>
+            <div className="text-center px-4 border-l border-gray-50">
+              <div className="text-4xl md:text-5xl font-bold text-[#002587] mb-3 tracking-tighter relative inline-block">10K+</div>
+              <div className="text-[10px] font-bold text-gray-400 tracking-[0.2em] mt-1 opacity-60">Support Ticket</div>
+            </div>
+          </div>
         </motion.div>
       </div>
     </section>
