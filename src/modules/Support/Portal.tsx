@@ -17,87 +17,57 @@ import {
   User as UserIcon,
   Loader2,
 } from "lucide-react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "@/providers/auth-provider";
-
-interface TicketItem {
-  id: string;
-  subject: string;
-  message: string;
-  status: "pending" | "open" | "closed";
-  created_at: string;
-}
+import { fetchUserTickets, createTicket, fetchForumPosts, TicketItem, ForumPost } from "@/lib/api/support";
 
 export default function SupportPortal({ user }: { user: any }) {
   const { profile, activeTab, setIsPortal } = useAuth();
   const [tickets, setTickets] = useState<TicketItem[]>([]);
   const [newQuestion, setNewQuestion] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const supabase = getSupabaseBrowserClient();
+  const [forumPosts, setForumPosts] = useState<ForumPost[]>([]);
+  const [forumLoading, setForumLoading] = useState(true);
 
   useEffect(() => {
     setIsPortal(true);
     return () => setIsPortal(false);
   }, [setIsPortal]);
 
-  useEffect(() => {
-    fetchTickets();
-    fetchForumPosts();
-  }, []);
-
-  const fetchTickets = async () => {
-    const { data } = await supabase
-      .from("support_tickets")
-      .select("*")
-      .eq("user_id", user?.id)
-      .order("created_at", { ascending: false });
-
-    if (data) setTickets(data as TicketItem[]);
+  const fetchTicketsData = async () => {
+    if (!user?.id) return;
+    const data = await fetchUserTickets(user.id);
+    setTickets(data);
   };
 
   const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newQuestion.trim()) return;
+    if (!newQuestion.trim() || !user?.id) return;
 
     setIsSubmitting(true);
-    const { data, error } = await supabase
-      .from("support_tickets")
-      .insert([
-        {
-          user_id: user.id,
-          subject:
-            newQuestion.length > 50
-              ? newQuestion.substring(0, 50) + "..."
-              : newQuestion,
-          message: newQuestion,
-          status: "pending",
-        },
-      ])
-      .select();
-
-    if (data) {
-      setNewQuestion("");
-      setTickets([data[0] as TicketItem, ...tickets]);
+    try {
+      const data = await createTicket(user.id, newQuestion);
+      if (data) {
+        setNewQuestion("");
+        setTickets([data, ...tickets]);
+      }
+    } catch (error) {
+      console.error("Error submitting ticket:", error);
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
-  const [forumPosts, setForumPosts] = useState<any[]>([]);
-  const [forumLoading, setForumLoading] = useState(true);
-
-  const fetchForumPosts = async () => {
+  const fetchForumPostsData = async () => {
     setForumLoading(true);
-    const { data } = await supabase
-      .from("forum_posts")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (data) setForumPosts(data || []);
+    const data = await fetchForumPosts();
+    setForumPosts(data);
     setForumLoading(false);
   };
+
+  useEffect(() => {
+    fetchTicketsData();
+    fetchForumPostsData();
+  }, [user?.id]);
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans mt-20">
@@ -327,14 +297,30 @@ export default function SupportPortal({ user }: { user: any }) {
                             className="group bg-white border border-gray-100 rounded-lg p-6 hover:border-[#002587] transition-all cursor-pointer shadow-sm"
                           >
                             <div className="flex items-start gap-4">
-                              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 shrink-0">
-                                <UserIcon size={20} />
+                              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 shrink-0 overflow-hidden">
+                                {post.author_alumni?.avatar ? (
+                                  <img 
+                                    src={post.author_alumni.avatar} 
+                                    alt="" 
+                                    className="w-full h-full object-cover" 
+                                  />
+                                ) : (
+                                  <UserIcon size={20} />
+                                )}
                               </div>
                               <div className="flex-grow">
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className="text-xs font-bold text-[#002587]">
-                                    {post.author_name || "Alumni One"}
+                                    {post.author_alumni?.name || post.author_name || "Alumni One"}
                                   </span>
+                                  {post.author_alumni?.batch && (
+                                    <>
+                                      <span className="text-[10px] text-gray-300">•</span>
+                                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                                        Angkatan {post.author_alumni.batch}
+                                      </span>
+                                    </>
+                                  )}
                                   <span className="text-[10px] text-gray-300">
                                     •
                                   </span>

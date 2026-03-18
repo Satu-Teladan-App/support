@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { User, Session } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchUserProfile } from "@/lib/api/profile";
+import { signOut as authSignOut } from "@/lib/supabase/auth"; // Renamed alias to avoid collision
 import { useRouter } from "next/navigation";
 
 interface AuthContextType {
@@ -65,13 +66,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
-    setUser(null);
-    setProfile(null);
-    setIsPortal(false);
-    router.refresh();
-    router.push("/");
+    try {
+      await authSignOut();
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      setIsPortal(false);
+      router.refresh();
+      router.push("/");
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
   };
 
   return (
