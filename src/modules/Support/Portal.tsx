@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   User as UserIcon,
   Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 import {
@@ -31,6 +32,32 @@ import {
   ForumPost,
   TicketPriority,
 } from "@/lib/api/support";
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const STATUS_CONFIG = {
+  pending: {
+    label: "Menunggu",
+    bg: "bg-amber-50",
+    text: "text-amber-600",
+    border: "border-amber-200",
+    icon: Clock,
+  },
+  open: {
+    label: "Diproses",
+    bg: "bg-blue-50",
+    text: "text-blue-600",
+    border: "border-blue-200",
+    icon: MessageSquare,
+  },
+  closed: {
+    label: "Selesai",
+    bg: "bg-green-50",
+    text: "text-green-600",
+    border: "border-green-200",
+    icon: CheckCircle2,
+  },
+} as const;
 
 // ─── Ticket card with expandable reply thread ──────────────────────────────
 
@@ -61,41 +88,42 @@ function TicketCard({
     }
   };
 
+  const statusCfg = STATUS_CONFIG[ticket.status] ?? STATUS_CONFIG["pending"];
+  const StatusIcon = statusCfg.icon;
+
   return (
-    <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
+    <div
+      className={`bg-white rounded-lg border shadow-sm overflow-hidden transition-all ${expanded ? `${statusCfg.border} border` : "border-gray-100"}`}
+    >
+      {/* Status bar */}
+      <div className={`${statusCfg.bg} px-4 py-2 flex items-center gap-2`}>
+        <StatusIcon size={12} className={statusCfg.text} />
+        <span
+          className={`text-[10px] font-bold uppercase tracking-widest ${statusCfg.text}`}
+        >
+          {statusCfg.label}
+        </span>
+        <span className="ml-auto text-[10px] text-gray-400">
+          {new Date(ticket.created_at).toLocaleDateString()}
+        </span>
+      </div>
+
       {/* Row */}
       <button
         className="w-full text-left p-4"
         onClick={() => setExpanded((v) => !v)}
       >
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            {ticket.status === "pending" && (
-              <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[9px] font-bold rounded uppercase tracking-widest">
-                Pending
-              </span>
-            )}
-            {ticket.status === "open" && (
-              <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-bold rounded uppercase tracking-widest">
-                Open
-              </span>
-            )}
-            {ticket.status === "closed" && (
-              <span className="px-2 py-0.5 bg-gray-100 text-gray-400 text-[9px] font-bold rounded uppercase tracking-widest">
-                Closed
-              </span>
-            )}
+        <div className="flex justify-between items-start mb-1">
+          <h3 className="text-xs font-bold text-gray-900 line-clamp-1 grow pr-2">
+            {ticket.subject}
+          </h3>
+          <div className="flex items-center gap-2 shrink-0">
             {(ticket.replies?.length ?? 0) > 0 && (
               <span className="flex items-center gap-1 text-[10px] font-bold text-[#002587]">
                 <MessageSquare size={10} />
-                {ticket.replies!.length} balasan
+                {ticket.replies!.length}
               </span>
             )}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-400">
-              {new Date(ticket.created_at).toLocaleDateString()}
-            </span>
             {expanded ? (
               <ChevronUp size={14} className="text-gray-400" />
             ) : (
@@ -103,9 +131,6 @@ function TicketCard({
             )}
           </div>
         </div>
-        <h3 className="text-xs font-bold text-gray-900 line-clamp-1 mb-1">
-          {ticket.subject}
-        </h3>
         <p className="text-[10px] text-gray-400 line-clamp-2">
           {ticket.message}
         </p>
@@ -192,6 +217,7 @@ export default function SupportPortal({
 }) {
   const { activeTab, setIsPortal } = useAuth();
   const [tickets, setTickets] = useState<TicketItem[]>([]);
+  const [newSubject, setNewSubject] = useState("");
   const [newQuestion, setNewQuestion] = useState("");
   const [priority, setPriority] = useState<TicketPriority>("normal");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -211,12 +237,18 @@ export default function SupportPortal({
 
   const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newQuestion.trim() || !user?.id) return;
+    if (!newSubject.trim() || !newQuestion.trim() || !user?.id) return;
 
     setIsSubmitting(true);
     try {
-      const data = await createTicket(user.id, newQuestion, priority);
+      const data = await createTicket(
+        user.id,
+        newSubject,
+        newQuestion,
+        priority,
+      );
       if (data) {
+        setNewSubject("");
         setNewQuestion("");
         setPriority("normal");
         setTickets((prev) => [data, ...prev]);
@@ -295,12 +327,30 @@ export default function SupportPortal({
                       Ajukan Pertanyaan Baru
                     </h2>
                     <form onSubmit={handleCreateTicket} className="space-y-4">
-                      <textarea
-                        value={newQuestion}
-                        onChange={(e) => setNewQuestion(e.target.value)}
-                        placeholder="Apa yang bisa kami bantu hari ini?"
-                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-lg focus:bg-white focus:border-[#002587] outline-none transition-all min-h-36 resize-none"
-                      />
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
+                          Subjek
+                        </label>
+                        <input
+                          type="text"
+                          value={newSubject}
+                          onChange={(e) => setNewSubject(e.target.value)}
+                          placeholder="Judul singkat permasalahan Anda..."
+                          maxLength={100}
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-lg focus:bg-white focus:border-[#002587] outline-none transition-all text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
+                          Pesan
+                        </label>
+                        <textarea
+                          value={newQuestion}
+                          onChange={(e) => setNewQuestion(e.target.value)}
+                          placeholder="Jelaskan permasalahan atau pertanyaan Anda secara detail..."
+                          className="w-full p-4 bg-gray-50 border border-gray-100 rounded-lg focus:bg-white focus:border-[#002587] outline-none transition-all min-h-36 resize-none text-sm"
+                        />
+                      </div>
                       {/* Priority selector */}
                       <div className="flex items-center gap-3 flex-wrap">
                         <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
@@ -330,7 +380,11 @@ export default function SupportPortal({
                       </div>
                       <button
                         type="submit"
-                        disabled={isSubmitting || !newQuestion.trim()}
+                        disabled={
+                          isSubmitting ||
+                          !newSubject.trim() ||
+                          !newQuestion.trim()
+                        }
                         className="w-full sm:w-auto px-8 py-4 bg-[#002587] text-white rounded-lg font-bold hover:bg-[#001d6b] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                       >
                         {isSubmitting ? (
@@ -372,13 +426,36 @@ export default function SupportPortal({
                   </div>
                 </div>
 
-                {/* Right Column - Active Tickets */}
+                {/* Right Column - Tickets */}
                 <div className="space-y-6">
                   <div className="bg-gray-50 border border-gray-100 rounded-lg p-6">
-                    <h2 className="font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                       <Ticket size={18} className="text-[#002587]" />
-                      Tiket Aktif Anda
+                      Tiket Anda
                     </h2>
+
+                    {/* Status summary pills */}
+                    {tickets.length > 0 && (
+                      <div className="flex gap-2 flex-wrap mb-5">
+                        {(["pending", "open", "closed"] as const).map((s) => {
+                          const count = tickets.filter(
+                            (t) => t.status === s,
+                          ).length;
+                          if (count === 0) return null;
+                          const cfg = STATUS_CONFIG[s];
+                          const Icon = cfg.icon;
+                          return (
+                            <span
+                              key={s}
+                              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${cfg.bg} ${cfg.text} border ${cfg.border}`}
+                            >
+                              <Icon size={10} />
+                              {count} {cfg.label}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
 
                     {tickets.length > 0 ? (
                       <div className="space-y-4">

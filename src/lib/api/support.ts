@@ -97,6 +97,7 @@ export const fetchUserTickets = async (
  */
 export const createTicket = async (
   userId: string,
+  subject: string,
   message: string,
   priority: TicketPriority = "normal",
 ): Promise<TicketItem> => {
@@ -105,8 +106,7 @@ export const createTicket = async (
     .insert([
       {
         user_id: userId,
-        subject:
-          message.length > 80 ? message.substring(0, 80) + "â€¦" : message,
+        subject,
         message,
         status: "pending",
         priority,
