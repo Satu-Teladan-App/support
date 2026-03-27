@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchUserProfile } from "@/lib/api/profile";
@@ -13,8 +19,8 @@ interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   signOut: () => Promise<void>;
-  activeTab: 'support' | 'forum';
-  setActiveTab: (tab: 'support' | 'forum') => void;
+  activeTab: "support" | "forum";
+  setActiveTab: (tab: "support" | "forum") => void;
   isPortal: boolean;
   setIsPortal: (val: boolean) => void;
 }
@@ -26,9 +32,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<any | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'support' | 'forum'>('support');
+  const [activeTab, setActiveTab] = useState<"support" | "forum">("support");
   const [isPortal, setIsPortal] = useState(false);
   const router = useRouter();
+
+  // Always use the singleton — never call getSupabaseBrowserClient() inside render
   const supabase = getSupabaseBrowserClient();
 
   const fetchProfile = async () => {
@@ -38,7 +46,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const fetchSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -49,7 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     fetchSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -63,7 +75,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const signOut = async () => {
     try {
@@ -80,17 +93,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      profile, 
-      session, 
-      isLoading, 
-      signOut,
-      activeTab,
-      setActiveTab,
-      isPortal,
-      setIsPortal
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        session,
+        isLoading,
+        signOut,
+        activeTab,
+        setActiveTab,
+        isPortal,
+        setIsPortal,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

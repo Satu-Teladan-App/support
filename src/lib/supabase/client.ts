@@ -1,17 +1,29 @@
-import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/types/database.types'
+import { createClient } from "@supabase/supabase-js";
+import { Database } from "@/types/database.types";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+// Module-level singleton — one instance shared across the entire app.
+// Creating multiple clients causes each one to independently poll /auth/v1/user,
+// which results in infinite network requests.
+let _browserClient: ReturnType<typeof createClient<Database>> | null = null;
 
-// Client-side supabase instance for browser
 export function getSupabaseBrowserClient() {
-  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  if (_browserClient) return _browserClient;
+
+  _browserClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
+      detectSessionInUrl: true,
     },
-  })
+  });
+
+  return _browserClient;
 }
+
+// Named export kept for backwards-compat with any direct `supabase.*` usages
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});

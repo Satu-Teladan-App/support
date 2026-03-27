@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -10,20 +11,189 @@ import {
   ArrowRight,
   LifeBuoy,
   Clock,
-  CheckCircle2,
   AlertCircle,
   MoreVertical,
-  LogOut,
+  ChevronDown,
+  ChevronUp,
+  Send,
+  ShieldCheck,
   User as UserIcon,
   Loader2,
 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
-import { fetchUserTickets, createTicket, fetchForumPosts, TicketItem, ForumPost } from "@/lib/api/support";
+import {
+  fetchUserTickets,
+  createTicket,
+  addTicketReply,
+  fetchForumPosts,
+  TicketItem,
+  TicketReply,
+  ForumPost,
+  TicketPriority,
+} from "@/lib/api/support";
 
-export default function SupportPortal({ user }: { user: any }) {
-  const { profile, activeTab, setIsPortal } = useAuth();
+// ─── Ticket card with expandable reply thread ──────────────────────────────
+
+function TicketCard({
+  ticket,
+  userId,
+  onReplyAdded,
+}: {
+  ticket: TicketItem;
+  userId: string;
+  onReplyAdded: (ticketId: string, reply: TicketReply) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [isSending, setIsSending] = useState(false);
+
+  const handleReply = async () => {
+    if (!replyText.trim()) return;
+    setIsSending(true);
+    try {
+      const reply = await addTicketReply(ticket.id, userId, replyText);
+      setReplyText("");
+      onReplyAdded(ticket.id, reply);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
+      {/* Row */}
+      <button
+        className="w-full text-left p-4"
+        onClick={() => setExpanded((v) => !v)}
+      >
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {ticket.status === "pending" && (
+              <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[9px] font-bold rounded uppercase tracking-widest">
+                Pending
+              </span>
+            )}
+            {ticket.status === "open" && (
+              <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-bold rounded uppercase tracking-widest">
+                Open
+              </span>
+            )}
+            {ticket.status === "closed" && (
+              <span className="px-2 py-0.5 bg-gray-100 text-gray-400 text-[9px] font-bold rounded uppercase tracking-widest">
+                Closed
+              </span>
+            )}
+            {(ticket.replies?.length ?? 0) > 0 && (
+              <span className="flex items-center gap-1 text-[10px] font-bold text-[#002587]">
+                <MessageSquare size={10} />
+                {ticket.replies!.length} balasan
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-gray-400">
+              {new Date(ticket.created_at).toLocaleDateString()}
+            </span>
+            {expanded ? (
+              <ChevronUp size={14} className="text-gray-400" />
+            ) : (
+              <ChevronDown size={14} className="text-gray-400" />
+            )}
+          </div>
+        </div>
+        <h3 className="text-xs font-bold text-gray-900 line-clamp-1 mb-1">
+          {ticket.subject}
+        </h3>
+        <p className="text-[10px] text-gray-400 line-clamp-2">
+          {ticket.message}
+        </p>
+      </button>
+
+      {/* Expanded reply thread */}
+      {expanded && (
+        <div className="border-t border-gray-100 px-4 pb-4 pt-3 space-y-3">
+          {/* Thread */}
+          {(ticket.replies ?? []).length > 0 && (
+            <div className="space-y-2">
+              {(ticket.replies ?? []).map((reply) => (
+                <div
+                  key={reply.id}
+                  className={`flex gap-2 ${reply.is_admin_reply ? "flex-row-reverse" : "flex-row"}`}
+                >
+                  <div
+                    className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+                      reply.is_admin_reply
+                        ? "bg-[#002587] text-white"
+                        : "bg-gray-100 text-gray-400"
+                    }`}
+                  >
+                    {reply.is_admin_reply ? (
+                      <ShieldCheck size={12} />
+                    ) : (
+                      <UserIcon size={12} />
+                    )}
+                  </div>
+                  <div
+                    className={`max-w-[80%] px-3 py-2 rounded-lg text-xs ${
+                      reply.is_admin_reply
+                        ? "bg-[#002587] text-white"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    <p>{reply.message}</p>
+                    <p
+                      className={`text-[9px] mt-1 ${
+                        reply.is_admin_reply ? "text-white/60" : "text-gray-400"
+                      }`}
+                    >
+                      {new Date(reply.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Follow-up reply input (only if not closed) */}
+          {ticket.status !== "closed" && (
+            <div className="flex gap-2 items-end pt-1">
+              <textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Tambahkan pesan lanjutan..."
+                className="flex-1 text-xs p-2 bg-gray-50 border border-gray-100 rounded-lg resize-none focus:bg-white focus:border-[#002587] outline-none transition-all min-h-16"
+              />
+              <button
+                onClick={handleReply}
+                disabled={isSending || !replyText.trim()}
+                className="flex items-center gap-1 px-3 py-2 bg-[#002587] text-white text-xs font-bold rounded-lg hover:bg-[#001d6b] disabled:opacity-50 transition-all self-end"
+              >
+                {isSending ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <Send size={12} />
+                )}
+                Kirim
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function SupportPortal({
+  user,
+}: {
+  user: { id: string; email?: string };
+}) {
+  const { activeTab, setIsPortal } = useAuth();
   const [tickets, setTickets] = useState<TicketItem[]>([]);
   const [newQuestion, setNewQuestion] = useState("");
+  const [priority, setPriority] = useState<TicketPriority>("normal");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [forumPosts, setForumPosts] = useState<ForumPost[]>([]);
   const [forumLoading, setForumLoading] = useState(true);
@@ -45,16 +215,27 @@ export default function SupportPortal({ user }: { user: any }) {
 
     setIsSubmitting(true);
     try {
-      const data = await createTicket(user.id, newQuestion);
+      const data = await createTicket(user.id, newQuestion, priority);
       if (data) {
         setNewQuestion("");
-        setTickets([data, ...tickets]);
+        setPriority("normal");
+        setTickets((prev) => [data, ...prev]);
       }
     } catch (error) {
       console.error("Error submitting ticket:", error);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleReplyAdded = (ticketId: string, reply: TicketReply) => {
+    setTickets((prev) =>
+      prev.map((t) =>
+        t.id === ticketId
+          ? { ...t, replies: [...(t.replies ?? []), reply] }
+          : t,
+      ),
+    );
   };
 
   const fetchForumPostsData = async () => {
@@ -65,8 +246,9 @@ export default function SupportPortal({ user }: { user: any }) {
   };
 
   useEffect(() => {
-    fetchTicketsData();
+    if (user?.id) fetchTicketsData();
     fetchForumPostsData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   return (
@@ -117,8 +299,35 @@ export default function SupportPortal({ user }: { user: any }) {
                         value={newQuestion}
                         onChange={(e) => setNewQuestion(e.target.value)}
                         placeholder="Apa yang bisa kami bantu hari ini?"
-                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-lg focus:bg-white focus:border-[#002587] outline-none transition-all min-h-[150px] resize-none"
+                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-lg focus:bg-white focus:border-[#002587] outline-none transition-all min-h-36 resize-none"
                       />
+                      {/* Priority selector */}
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                          Prioritas:
+                        </span>
+                        {(
+                          [
+                            "low",
+                            "normal",
+                            "high",
+                            "urgent",
+                          ] as TicketPriority[]
+                        ).map((p) => (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => setPriority(p)}
+                            className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded border transition-all ${
+                              priority === p
+                                ? "bg-[#002587] text-white border-[#002587]"
+                                : "bg-white text-gray-500 border-gray-200 hover:border-[#002587] hover:text-[#002587]"
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        ))}
+                      </div>
                       <button
                         type="submit"
                         disabled={isSubmitting || !newQuestion.trim()}
@@ -174,39 +383,12 @@ export default function SupportPortal({ user }: { user: any }) {
                     {tickets.length > 0 ? (
                       <div className="space-y-4">
                         {tickets.map((ticket) => (
-                          <div
+                          <TicketCard
                             key={ticket.id}
-                            className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm"
-                          >
-                            <div className="flex justify-between items-start mb-2">
-                              {ticket.status === "pending" && (
-                                <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[9px] font-bold rounded-none uppercase tracking-widest">
-                                  Pending
-                                </span>
-                              )}
-                              {ticket.status === "open" && (
-                                <span className="px-2 py-0.5 bg-green-50 text-green-600 text-[9px] font-bold rounded-none uppercase tracking-widest">
-                                  Open
-                                </span>
-                              )}
-                              {ticket.status === "closed" && (
-                                <span className="px-2 py-0.5 bg-gray-100 text-gray-400 text-[9px] font-bold rounded-none uppercase tracking-widest">
-                                  Closed
-                                </span>
-                              )}
-                              <span className="text-[10px] text-gray-400">
-                                {new Date(
-                                  ticket.created_at,
-                                ).toLocaleDateString()}
-                              </span>
-                            </div>
-                            <h3 className="text-xs font-bold text-gray-900 line-clamp-1 mb-1">
-                              {ticket.subject}
-                            </h3>
-                            <p className="text-[10px] text-gray-400 line-clamp-2">
-                              {ticket.message}
-                            </p>
-                          </div>
+                            ticket={ticket}
+                            userId={user.id}
+                            onReplyAdded={handleReplyAdded}
+                          />
                         ))}
                       </div>
                     ) : (
@@ -299,23 +481,29 @@ export default function SupportPortal({ user }: { user: any }) {
                             <div className="flex items-start gap-4">
                               <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 shrink-0 overflow-hidden">
                                 {post.author_alumni?.avatar ? (
-                                  <img 
-                                    src={post.author_alumni.avatar} 
-                                    alt="" 
-                                    className="w-full h-full object-cover" 
+                                  <Image
+                                    src={post.author_alumni.avatar}
+                                    alt=""
+                                    width={40}
+                                    height={40}
+                                    className="w-full h-full object-cover"
                                   />
                                 ) : (
                                   <UserIcon size={20} />
                                 )}
                               </div>
-                              <div className="flex-grow">
+                              <div className="grow">
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className="text-xs font-bold text-[#002587]">
-                                    {post.author_alumni?.name || post.author_name || "Alumni One"}
+                                    {post.author_alumni?.name ||
+                                      post.author_name ||
+                                      "Alumni One"}
                                   </span>
                                   {post.author_alumni?.batch && (
                                     <>
-                                      <span className="text-[10px] text-gray-300">•</span>
+                                      <span className="text-[10px] text-gray-300">
+                                        •
+                                      </span>
                                       <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                                         Angkatan {post.author_alumni.batch}
                                       </span>
