@@ -1,4 +1,4 @@
-﻿import { getSupabaseBrowserClient } from "../supabase/client";
+import { getSupabaseBrowserClient } from "../supabase/client";
 
 // Escape hatch: cast the Supabase client to `any` for tables/columns that exist
 // in the DB (via migration 003) but are not yet reflected in the auto-generated
@@ -7,7 +7,7 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = () => getSupabaseBrowserClient() as any;
 
-export type TicketStatus = "pending" | "open" | "closed";
+export type TicketStatus = "pending" | "open" | "in_progress" | "resolved" | "closed";
 export type TicketPriority = "low" | "normal" | "high" | "urgent";
 
 export interface TicketReply {
@@ -62,7 +62,7 @@ export interface ForumPost {
   } | null;
 }
 
-// â”€â”€â”€ User: fetch own tickets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── User: fetch own tickets ──────────────────────────────────────────────────
 
 /**
  * Fetch tickets for the current user (with latest replies)
@@ -139,7 +139,7 @@ export const addTicketReply = async (
   return data as TicketReply;
 };
 
-// â”€â”€â”€ Admin: ticket management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Admin: ticket management ────────────────────────────────────────────────
 
 /**
  * Fetch ALL tickets (admin only, enforced by RLS)
@@ -191,7 +191,7 @@ export const updateTicketStatus = async (
 ): Promise<TicketItem | null> => {
   try {
     const payload: Record<string, unknown> = { ...updates };
-    if (updates.status === "closed") {
+    if (updates.status === "closed" || updates.status === "resolved") {
       payload.resolved_at = new Date().toISOString();
     } else {
       payload.resolved_at = null;
@@ -266,7 +266,7 @@ export const fetchTicketReplies = async (
   }
 };
 
-// â”€â”€â”€ Forum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Forum ───────────────────────────────────────────────────────────────────
 
 /**
  * Fetch all forum posts with author information

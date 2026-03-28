@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google";
+import { Inter, Outfit } from "next/font/google"; // Updated fonts
 import "./globals.css";
 
-const montserrat = Montserrat({
-  variable: "--font-sans",
+const interFont = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+});
+
+const outfitFont = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
@@ -33,9 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
-      <body
-        className={`${montserrat.variable} antialiased`}
-      >
+      <body className={`${interFont.variable} ${outfitFont.variable} antialiased font-sans`}>
         <AuthProvider>
           <GlobalLayout>
             {children}

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -8,11 +7,7 @@ import {
   MessageSquare,
   Search,
   Ticket,
-  ArrowRight,
-  LifeBuoy,
   Clock,
-  AlertCircle,
-  MoreVertical,
   ChevronDown,
   ChevronUp,
   Send,
@@ -20,57 +15,94 @@ import {
   User as UserIcon,
   Loader2,
   CheckCircle2,
+  Trash2,
+  AlertTriangle,
+  ArrowRight,
+  Filter,
+  X,
+  User,
+  Calendar,
+  Hash,
+  AlertCircle,
+  RefreshCw
 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 import {
   fetchUserTickets,
   createTicket,
   addTicketReply,
-  fetchForumPosts,
   TicketItem,
   TicketReply,
-  ForumPost,
   TicketPriority,
 } from "@/lib/api/support";
+import { submitDeletionRequest } from "@/lib/api/account-deletion";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Status Config (Satu Teladan Style) ──────────────────────────────────────
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; dot: string }> = {
   pending: {
     label: "Menunggu",
     bg: "bg-amber-50",
-    text: "text-amber-600",
-    border: "border-amber-200",
-    icon: Clock,
+    text: "text-amber-700",
+    dot: "bg-amber-500",
   },
   open: {
-    label: "Diproses",
+    label: "Terbuka",
     bg: "bg-blue-50",
-    text: "text-blue-600",
-    border: "border-blue-200",
-    icon: MessageSquare,
+    text: "text-blue-700",
+    dot: "bg-blue-500",
   },
-  closed: {
+  in_progress: {
+    label: "Sedang Diproses",
+    bg: "bg-sky-50",
+    text: "text-sky-700",
+    dot: "bg-sky-500",
+  },
+  resolved: {
     label: "Selesai",
     bg: "bg-green-50",
-    text: "text-green-600",
-    border: "border-green-200",
-    icon: CheckCircle2,
+    text: "text-green-700",
+    dot: "bg-green-500",
+  },
+  closed: {
+    label: "Ditutup",
+    bg: "bg-gray-100",
+    text: "text-gray-500",
+    dot: "bg-gray-400",
   },
 } as const;
 
-// ─── Ticket card with expandable reply thread ──────────────────────────────
+// ─── Formatting ──────────────────────────────────────────────────────────────
 
-function TicketCard({
-  ticket,
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - date.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 1) return "1 hari yang lalu";
+  if (diffDays < 30) return `${diffDays} hari yang lalu`;
+  
+  return date.toLocaleDateString('id-ID', { 
+    month: 'long', 
+    day: 'numeric', 
+    year: 'numeric'
+  });
+};
+
+// ─── Ticket Details Panel ────────────────────────────────────────────────────
+
+function TicketDetails({ 
+  ticket, 
+  onClose,
   userId,
-  onReplyAdded,
-}: {
-  ticket: TicketItem;
+  onReplyAdded
+}: { 
+  ticket: TicketItem; 
+  onClose: () => void;
   userId: string;
   onReplyAdded: (ticketId: string, reply: TicketReply) => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [isSending, setIsSending] = useState(false);
 
@@ -88,122 +120,115 @@ function TicketCard({
     }
   };
 
-  const statusCfg = STATUS_CONFIG[ticket.status] ?? STATUS_CONFIG["pending"];
-  const StatusIcon = statusCfg.icon;
+  const status = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.pending;
 
   return (
-    <div
-      className={`bg-white rounded-lg border shadow-sm overflow-hidden transition-all ${expanded ? `${statusCfg.border} border` : "border-gray-100"}`}
-    >
-      {/* Status bar */}
-      <div className={`${statusCfg.bg} px-4 py-2 flex items-center gap-2`}>
-        <StatusIcon size={12} className={statusCfg.text} />
-        <span
-          className={`text-[10px] font-bold uppercase tracking-widest ${statusCfg.text}`}
-        >
-          {statusCfg.label}
-        </span>
-        <span className="ml-auto text-[10px] text-gray-400">
-          {new Date(ticket.created_at).toLocaleDateString()}
-        </span>
+    <div className="flex flex-col h-full bg-white border-l border-gray-100 overflow-hidden shadow-2xl font-sans">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50 bg-white">
+        <h2 className="text-base font-bold text-gray-900 font-title truncate mr-4">
+          {ticket.subject}
+        </h2>
+        <button onClick={onClose} className="p-2.5 hover:bg-gray-100 rounded-full transition-all group shadow-sm bg-gray-50 border border-gray-100">
+          <X size={20} className="text-gray-400 group-hover:text-gray-900 group-hover:rotate-90 transition-all duration-300" />
+        </button>
       </div>
 
-      {/* Row */}
-      <button
-        className="w-full text-left p-4"
-        onClick={() => setExpanded((v) => !v)}
-      >
-        <div className="flex justify-between items-start mb-1">
-          <h3 className="text-xs font-bold text-gray-900 line-clamp-1 grow pr-2">
-            {ticket.subject}
-          </h3>
-          <div className="flex items-center gap-2 shrink-0">
-            {(ticket.replies?.length ?? 0) > 0 && (
-              <span className="flex items-center gap-1 text-[10px] font-bold text-[#002587]">
-                <MessageSquare size={10} />
-                {ticket.replies!.length}
+      <div className="flex-1 overflow-y-auto p-8 space-y-10">
+        <div className="grid grid-cols-2 gap-6 bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
+           <div className="space-y-1">
+              <span className="text-[10px] font-bold text-gray-400 block">Pemohon</span>
+              <span className="text-xs font-semibold text-gray-700">Anda</span>
+           </div>
+           <div className="space-y-1">
+              <span className="text-[10px] font-bold text-gray-400 block">Dibuat</span>
+              <span className="text-xs font-semibold text-gray-700">{new Date(ticket.created_at).toLocaleDateString('id-ID')}</span>
+           </div>
+           <div className="space-y-1">
+              <span className="text-[10px] font-bold text-gray-400 block">Nomor ID</span>
+              <span className="text-xs font-semibold text-gray-700">#{ticket.id.slice(0, 8)}</span>
+           </div>
+           <div className="space-y-1">
+              <span className="text-[10px] font-bold text-gray-400 block">Status</span>
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold ${status.bg} ${status.text}`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
+                {status.label}
               </span>
-            )}
-            {expanded ? (
-              <ChevronUp size={14} className="text-gray-400" />
-            ) : (
-              <ChevronDown size={14} className="text-gray-400" />
-            )}
-          </div>
+           </div>
         </div>
-        <p className="text-[10px] text-gray-400 line-clamp-2">
-          {ticket.message}
-        </p>
-      </button>
 
-      {/* Expanded reply thread */}
-      {expanded && (
-        <div className="border-t border-gray-100 px-4 pb-4 pt-3 space-y-3">
-          {/* Thread */}
-          {(ticket.replies ?? []).length > 0 && (
-            <div className="space-y-2">
-              {(ticket.replies ?? []).map((reply) => (
-                <div
-                  key={reply.id}
-                  className={`flex gap-2 ${reply.is_admin_reply ? "flex-row-reverse" : "flex-row"}`}
-                >
-                  <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
-                      reply.is_admin_reply
-                        ? "bg-[#002587] text-white"
-                        : "bg-gray-100 text-gray-400"
-                    }`}
-                  >
+        <div className="space-y-4">
+           <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200">
+                 <UserIcon size={16} className="text-gray-400" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-gray-900">Anda</p>
+                <p className="text-[11px] text-gray-400 font-medium">{formatDate(ticket.created_at)}</p>
+              </div>
+           </div>
+           <div className="pl-12 pr-4">
+              <p className="text-sm text-gray-600 leading-relaxed font-medium">
+                {ticket.message}
+              </p>
+           </div>
+        </div>
+
+        <div className="border-t border-gray-50 pt-8 space-y-8">
+           {(ticket.replies ?? []).map((reply) => (
+             <div key={reply.id} className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center border ${reply.is_admin_reply ? "bg-[#002587] border-[#002587]" : "bg-gray-100 border-gray-200"}`}>
                     {reply.is_admin_reply ? (
-                      <ShieldCheck size={12} />
+                      <ShieldCheck size={16} className="text-white" />
                     ) : (
-                      <UserIcon size={12} />
+                      <UserIcon size={16} className="text-gray-400" />
                     )}
                   </div>
-                  <div
-                    className={`max-w-[80%] px-3 py-2 rounded-lg text-xs ${
-                      reply.is_admin_reply
-                        ? "bg-[#002587] text-white"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    <p>{reply.message}</p>
-                    <p
-                      className={`text-[9px] mt-1 ${
-                        reply.is_admin_reply ? "text-white/60" : "text-gray-400"
-                      }`}
-                    >
-                      {new Date(reply.created_at).toLocaleString()}
+                  <div>
+                    <p className={`text-sm font-bold ${reply.is_admin_reply ? "text-[#002587]" : "text-gray-900"}`}>
+                      {reply.is_admin_reply ? "Tim Dukungan" : "Anda"}
                     </p>
+                    <p className="text-[11px] text-gray-400 font-medium">{formatDate(reply.created_at)}</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="pl-12 pr-4">
+                  <p className="text-sm text-gray-600 leading-relaxed font-medium">
+                    {reply.message}
+                  </p>
+                </div>
+             </div>
+           ))}
+        </div>
+      </div>
 
-          {/* Follow-up reply input (only if not closed) */}
-          {ticket.status !== "closed" && (
-            <div className="flex gap-2 items-end pt-1">
-              <textarea
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                placeholder="Tambahkan pesan lanjutan..."
-                className="flex-1 text-xs p-2 bg-gray-50 border border-gray-100 rounded-lg resize-none focus:bg-white focus:border-[#002587] outline-none transition-all min-h-16"
-              />
+      {ticket.status !== "closed" && (
+        <div className="p-6 bg-white border-t border-gray-100">
+          <div className="space-y-4">
+            <textarea
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Tulis balasan tindak lanjut..."
+              className="w-full text-sm p-5 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:border-[#002587] outline-none transition-all min-h-[120px] resize-none font-medium text-gray-800 placeholder:text-gray-300 shadow-inner"
+            />
+            <div className="flex justify-end">
               <button
                 onClick={handleReply}
                 disabled={isSending || !replyText.trim()}
-                className="flex items-center gap-1 px-3 py-2 bg-[#002587] text-white text-xs font-bold rounded-lg hover:bg-[#001d6b] disabled:opacity-50 transition-all self-end"
+                className="flex items-center gap-2 px-8 py-3.5 bg-[#002587] text-white text-xs font-bold rounded-xl hover:bg-[#001d6b] disabled:bg-gray-100 disabled:text-gray-300 transition-all shadow-lg shadow-blue-900/10"
               >
-                {isSending ? (
-                  <Loader2 size={12} className="animate-spin" />
-                ) : (
-                  <Send size={12} />
-                )}
-                Kirim
+                {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                Kirim Balasan
               </button>
             </div>
-          )}
+          </div>
+        </div>
+      )}
+      
+      {ticket.status === "closed" && (
+        <div className="p-8 bg-gray-50 border-t border-gray-100 text-center">
+          <p className="text-xs font-semibold text-gray-400 leading-relaxed">
+            Tiket ini telah ditutup. Anda dapat membuat <span className="text-[#002587] cursor-pointer hover:underline font-bold">tiket baru</span> jika masalah berlanjut.
+          </p>
         </div>
       )}
     </div>
@@ -215,434 +240,373 @@ export default function SupportPortal({
 }: {
   user: { id: string; email?: string };
 }) {
-  const { activeTab, setIsPortal } = useAuth();
+  const [activeTab, setActiveTab] = useState<"requests" | "delete-account">("requests");
   const [tickets, setTickets] = useState<TicketItem[]>([]);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  
   const [newSubject, setNewSubject] = useState("");
   const [newQuestion, setNewQuestion] = useState("");
   const [priority, setPriority] = useState<TicketPriority>("normal");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [forumPosts, setForumPosts] = useState<ForumPost[]>([]);
-  const [forumLoading, setForumLoading] = useState(true);
+
+  const [delReason, setDelReason] = useState("");
+  const [delConfirm, setDelConfirm] = useState("");
+  const [isDelLoading, setIsDelLoading] = useState(false);
+  const [isDelSuccess, setIsDelSuccess] = useState(false);
+  const [delError, setDelError] = useState("");
 
   useEffect(() => {
-    setIsPortal(true);
-    return () => setIsPortal(false);
-  }, [setIsPortal]);
+    fetchTickets();
+  }, [user.id]);
 
-  const fetchTicketsData = async () => {
-    if (!user?.id) return;
-    const data = await fetchUserTickets(user.id);
-    setTickets(data);
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedTicketId(null);
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, []);
+
+  const fetchTickets = async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchUserTickets(user.id);
+      setTickets(data);
+    } catch (err) {
+      console.error("Error fetching tickets:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newSubject.trim() || !newQuestion.trim() || !user?.id) return;
+    if (!newSubject.trim() || !newQuestion.trim()) return;
 
     setIsSubmitting(true);
     try {
-      const data = await createTicket(
-        user.id,
-        newSubject,
-        newQuestion,
-        priority,
-      );
-      if (data) {
-        setNewSubject("");
-        setNewQuestion("");
-        setPriority("normal");
-        setTickets((prev) => [data, ...prev]);
-      }
+      const data = await createTicket(user.id, newSubject, newQuestion, priority);
+      setTickets([data, ...tickets]);
+      setIsCreating(false);
+      setNewSubject("");
+      setNewQuestion("");
+      setSelectedTicketId(data.id);
     } catch (error) {
-      console.error("Error submitting ticket:", error);
+      console.error(error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleReplyAdded = (ticketId: string, reply: TicketReply) => {
-    setTickets((prev) =>
-      prev.map((t) =>
-        t.id === ticketId
-          ? { ...t, replies: [...(t.replies ?? []), reply] }
-          : t,
-      ),
-    );
+  const handleDeleteRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (delConfirm.toUpperCase() !== "HAPUS AKUN" || delReason.length < 10) return;
+
+    setIsDelLoading(true);
+    setDelError("");
+    try {
+      await submitDeletionRequest({
+        email: user.email || "",
+        reason: delReason.trim(),
+      });
+      setIsDelSuccess(true);
+    } catch (err: any) {
+      setDelError(err.message || "Gagal mengirim permintaan");
+    } finally {
+      setIsDelLoading(false);
+    }
   };
 
-  const fetchForumPostsData = async () => {
-    setForumLoading(true);
-    const data = await fetchForumPosts();
-    setForumPosts(data);
-    setForumLoading(false);
-  };
-
-  useEffect(() => {
-    if (user?.id) fetchTicketsData();
-    fetchForumPostsData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  const activeTicket = tickets.find(t => t.id === selectedTicketId);
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans mt-20">
-      <main className="pb-20 container mx-auto px-6 max-w-6xl">
-        <AnimatePresence mode="wait">
-          {activeTab === "support" ? (
-            <motion.div
-              key="support"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="space-y-12"
-            >
-              {/* Support Hero */}
-              <section className="text-center py-12">
-                <h1 className="text-4xl md:text-5xl font-bold text-[#002587] mb-6 tracking-tight">
-                  Bantuan Layanan Support
-                </h1>
-                <p className="text-gray-500 max-w-2xl mx-auto text-lg">
-                  Keluarga besar Satu Teladan hadir untuk saling membantu.
-                  Temukan solusi atau ajukan pertanyaan langsung kepada tim
-                  kami.
-                </p>
-                <div className="mt-10 max-w-xl mx-auto relative group">
-                  <Search
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#002587] transition-colors"
-                    size={20}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Cari solusi atau panduan..."
-                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-lg focus:bg-white focus:border-[#002587] outline-none transition-all shadow-sm"
-                  />
-                </div>
-              </section>
+    <div className="min-h-screen bg-white font-sans text-gray-900 flex flex-col">
+      <header className="px-6 py-4 border-b border-gray-100 flex items-center justify-center bg-white relative z-10">
+        <div className="flex items-center gap-8">
+           <button 
+             onClick={() => { setActiveTab("requests"); setIsCreating(false); }}
+             className={`text-xs font-bold transition-all pb-2 border-b-2 font-title ${activeTab === "requests" ? "border-[#002587] text-[#002587]" : "border-transparent text-gray-400 hover:text-gray-900"}`}
+           >
+             Tiket Dukungan
+           </button>
+           <button 
+             onClick={() => setActiveTab("delete-account")}
+             className={`text-xs font-bold transition-all pb-2 border-b-2 font-title ${activeTab === "delete-account" ? "border-[#002587] text-[#002587]" : "border-transparent text-gray-400 hover:text-gray-900"}`}
+           >
+             Penghapusan Akun
+           </button>
+        </div>
+      </header>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column - New Ticket */}
-                <div className="lg:col-span-2 space-y-8">
-                  <div className="bg-white border border-gray-100 rounded-lg p-8 shadow-sm">
-                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                      <MessageSquare className="text-[#002587]" size={22} />
-                      Ajukan Pertanyaan Baru
-                    </h2>
-                    <form onSubmit={handleCreateTicket} className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
-                          Subjek
-                        </label>
-                        <input
-                          type="text"
-                          value={newSubject}
-                          onChange={(e) => setNewSubject(e.target.value)}
-                          placeholder="Judul singkat permasalahan Anda..."
-                          maxLength={100}
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-lg focus:bg-white focus:border-[#002587] outline-none transition-all text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
-                          Pesan
-                        </label>
-                        <textarea
-                          value={newQuestion}
-                          onChange={(e) => setNewQuestion(e.target.value)}
-                          placeholder="Jelaskan permasalahan atau pertanyaan Anda secara detail..."
-                          className="w-full p-4 bg-gray-50 border border-gray-100 rounded-lg focus:bg-white focus:border-[#002587] outline-none transition-all min-h-36 resize-none text-sm"
-                        />
-                      </div>
-                      {/* Priority selector */}
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-                          Prioritas:
-                        </span>
-                        {(
-                          [
-                            "low",
-                            "normal",
-                            "high",
-                            "urgent",
-                          ] as TicketPriority[]
-                        ).map((p) => (
-                          <button
-                            key={p}
-                            type="button"
-                            onClick={() => setPriority(p)}
-                            className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded border transition-all ${
-                              priority === p
-                                ? "bg-[#002587] text-white border-[#002587]"
-                                : "bg-white text-gray-500 border-gray-200 hover:border-[#002587] hover:text-[#002587]"
-                            }`}
-                          >
-                            {p}
-                          </button>
-                        ))}
-                      </div>
-                      <button
-                        type="submit"
-                        disabled={
-                          isSubmitting ||
-                          !newSubject.trim() ||
-                          !newQuestion.trim()
-                        }
-                        className="w-full sm:w-auto px-8 py-4 bg-[#002587] text-white rounded-lg font-bold hover:bg-[#001d6b] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                      >
-                        {isSubmitting ? (
-                          <Loader2 className="animate-spin" size={18} />
-                        ) : (
-                          <Plus size={18} />
-                        )}
-                        Kirim Pertanyaan
-                      </button>
-                    </form>
+      <main className="flex-1 flex overflow-hidden relative">
+        <div className="flex-1 overflow-y-auto w-full bg-gray-50/30">
+          <div className="max-w-5xl mx-auto px-6 py-12 md:py-20 lg:py-24">
+            <AnimatePresence mode="wait">
+              {activeTab === "requests" ? (
+                <motion.div
+                  key="requests"
+                  initial={{ opacity: 0, scale: 0.99 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.99 }}
+                  className="space-y-12"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                     <div>
+                        <h1 className="text-3xl font-bold text-gray-900 font-title tracking-tight">Aktivitas Terbaru</h1>
+                        <p className="text-sm text-gray-500 mt-2 font-medium">Pantau dan kelola tiket dukungan Anda</p>
+                     </div>
+                     {!isCreating && (
+                       <div className="flex items-center gap-3">
+                         <button 
+                           onClick={fetchTickets}
+                           className="p-3.5 text-gray-400 hover:text-[#002587] hover:bg-white rounded-xl transition-all border border-transparent hover:border-blue-100 shadow-sm"
+                           title="Muat Ulang"
+                         >
+                           <RefreshCw size={18} className={isLoading ? "animate-spin" : ""} />
+                         </button>
+                         <button 
+                           onClick={() => setIsCreating(true)}
+                           className="flex items-center gap-2 px-8 py-3.5 bg-[#002587] text-white text-xs font-bold rounded-xl hover:bg-[#001d6b] transition-all shadow-xl shadow-blue-900/20"
+                         >
+                           <Plus size={18} /> Tiket Baru
+                         </button>
+                       </div>
+                     )}
                   </div>
 
-                  {/* Knowledge Base Preview */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {[
-                      {
-                        title: "Panduan Alumni",
-                        desc: "Cara verifikasi data alumni dan akses fitur komunitas.",
-                      },
-                      {
-                        title: "Akses Forum",
-                        desc: "Etos kerja dan aturan dalam berdiskusi di forum Satu Teladan.",
-                      },
-                    ].map((kb, i) => (
-                      <div
-                        key={i}
-                        className="bg-white border border-gray-100 rounded-lg p-6 hover:border-[#002587] transition-all cursor-pointer group shadow-sm"
-                      >
-                        <h3 className="font-bold text-gray-900 mb-2 group-hover:text-[#002587]">
-                          {kb.title}
-                        </h3>
-                        <p className="text-sm text-gray-500 mb-4">{kb.desc}</p>
-                        <span className="text-[10px] font-bold text-[#002587] flex items-center gap-2 uppercase tracking-widest">
-                          Baca Selengkapnya
-                          <ArrowRight size={12} />
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Right Column - Tickets */}
-                <div className="space-y-6">
-                  <div className="bg-gray-50 border border-gray-100 rounded-lg p-6">
-                    <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <Ticket size={18} className="text-[#002587]" />
-                      Tiket Anda
-                    </h2>
-
-                    {/* Status summary pills */}
-                    {tickets.length > 0 && (
-                      <div className="flex gap-2 flex-wrap mb-5">
-                        {(["pending", "open", "closed"] as const).map((s) => {
-                          const count = tickets.filter(
-                            (t) => t.status === s,
-                          ).length;
-                          if (count === 0) return null;
-                          const cfg = STATUS_CONFIG[s];
-                          const Icon = cfg.icon;
-                          return (
-                            <span
-                              key={s}
-                              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${cfg.bg} ${cfg.text} border ${cfg.border}`}
-                            >
-                              <Icon size={10} />
-                              {count} {cfg.label}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {tickets.length > 0 ? (
-                      <div className="space-y-4">
-                        {tickets.map((ticket) => (
-                          <TicketCard
-                            key={ticket.id}
-                            ticket={ticket}
-                            userId={user.id}
-                            onReplyAdded={handleReplyAdded}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <LifeBuoy className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-                        <p className="text-xs text-gray-400">
-                          Belum ada tiket bantuan aktif
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="bg-[#002587] rounded-lg p-6 text-white shadow-lg shadow-[#002587]/20">
-                    <h3 className="font-bold mb-2">Butuh Bantuan Cepat?</h3>
-                    <p className="text-xs text-white/70 mb-6">
-                      Hubungi admin kami melalui WhatsApp untuk respon yang
-                      lebih instan.
-                    </p>
-                    <a
-                      href="#"
-                      className="flex items-center justify-center gap-2 w-full py-3 bg-white text-[#002587] rounded-lg text-xs font-bold hover:bg-gray-50 transition-all"
+                  {isCreating ? (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-white border border-gray-100 p-8 md:p-12 rounded-2xl shadow-xl shadow-gray-200/50 space-y-10"
                     >
-                      Hubungi Admin
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="forum"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="space-y-12"
-            >
-              {/* Forum Hero */}
-              <section className="text-center py-12">
-                <h1 className="text-4xl md:text-5xl font-bold text-[#002587] mb-6 tracking-tight">
-                  Forum Alumni & Siswa
-                </h1>
-                <p className="text-gray-500 max-w-2xl mx-auto text-lg font-medium">
-                  Berdiskusi, berbagi pengalaman, dan membangun jaringan antar
-                  alumni Satu Teladan.
-                </p>
-              </section>
-
-              {/* Forum Content */}
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Categories */}
-                <div className="lg:col-span-1 border-r border-gray-100 pr-8">
-                  <div className="mt-12 p-6 bg-amber-50 border border-amber-100 rounded-lg">
-                    <AlertCircle size={20} className="text-amber-600 mb-4" />
-                    <h3 className="text-xs font-bold text-amber-900 mb-2 uppercase tracking-wide">
-                      Aturan Forum
-                    </h3>
-                    <p className="text-[10px] text-amber-700 leading-relaxed font-medium">
-                      Jaga kesopanan, hindari SARA dan politik praktis dalam
-                      setiap diskusi.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Posts Feed */}
-                <div className="lg:col-span-3 space-y-6">
-                  <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
-                      Postingan Terbaru
-                    </h2>
-                    <button className="px-6 py-3 bg-[#002587] text-white rounded-lg text-sm font-bold hover:bg-[#001d6b] transition-all flex items-center gap-2 shadow-lg shadow-[#002587]/10">
-                      <Plus size={18} /> Buat Diskusi
-                    </button>
-                  </div>
-
-                  {forumLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 grayscale opacity-20">
-                      <Loader2 className="animate-spin mb-4" />
-                      <p className="text-xs font-bold uppercase tracking-widest">
-                        Memuat Diskusi...
-                      </p>
-                    </div>
+                      <div className="flex items-center justify-between border-b border-gray-50 pb-6">
+                         <h2 className="text-lg font-bold font-title text-gray-900">Kirim tiket baru</h2>
+                         <button onClick={() => setIsCreating(false)} className="p-2 text-gray-300 hover:text-gray-900 transition-colors">
+                            <X size={24} />
+                         </button>
+                      </div>
+                      <form onSubmit={handleCreateTicket} className="space-y-10">
+                        <div className="space-y-3">
+                          <label className="text-xs font-bold text-gray-500 pl-1">Subjek</label>
+                          <input 
+                            type="text"
+                            value={newSubject}
+                            onChange={(e) => setNewSubject(e.target.value)}
+                            placeholder="Judul singkat masalah Anda..."
+                            className="w-full py-4 px-5 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-[#002587] outline-none transition-all text-sm font-semibold placeholder:text-gray-200"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-3">
+                          <label className="text-xs font-bold text-gray-500 pl-1">Detail</label>
+                          <textarea 
+                            value={newQuestion}
+                            onChange={(e) => setNewQuestion(e.target.value)}
+                            placeholder="Berikan detail agar kami dapat membantu lebih cepat..."
+                            className="w-full py-5 px-5 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-[#002587] outline-none transition-all text-sm font-semibold placeholder:text-gray-200 min-h-[160px] resize-none"
+                            required
+                          />
+                        </div>
+                        <div className="flex justify-end pt-4">
+                           <button 
+                             type="submit"
+                             disabled={isSubmitting}
+                             className="px-12 py-4 bg-[#002587] text-white text-xs font-bold rounded-xl hover:bg-[#001d6b] transition-all disabled:bg-gray-100 flex items-center gap-3 shadow-lg shadow-blue-900/20"
+                           >
+                             {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                             Kirim Tiket
+                           </button>
+                        </div>
+                      </form>
+                    </motion.div>
                   ) : (
-                    <div className="space-y-4">
-                      {forumPosts.length > 0 ? (
-                        forumPosts.map((post) => (
-                          <div
-                            key={post.id}
-                            className="group bg-white border border-gray-100 rounded-lg p-6 hover:border-[#002587] transition-all cursor-pointer shadow-sm"
-                          >
-                            <div className="flex items-start gap-4">
-                              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 shrink-0 overflow-hidden">
-                                {post.author_alumni?.avatar ? (
-                                  <Image
-                                    src={post.author_alumni.avatar}
-                                    alt=""
-                                    width={40}
-                                    height={40}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <UserIcon size={20} />
-                                )}
-                              </div>
-                              <div className="grow">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-xs font-bold text-[#002587]">
-                                    {post.author_alumni?.name ||
-                                      post.author_name ||
-                                      "Alumni One"}
-                                  </span>
-                                  {post.author_alumni?.batch && (
-                                    <>
-                                      <span className="text-[10px] text-gray-300">
-                                        •
-                                      </span>
-                                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                                        Angkatan {post.author_alumni.batch}
-                                      </span>
-                                    </>
-                                  )}
-                                  <span className="text-[10px] text-gray-300">
-                                    •
-                                  </span>
-                                  <span className="text-[10px] text-gray-400 font-medium">
-                                    {new Date(
-                                      post.created_at,
-                                    ).toLocaleDateString()}
-                                  </span>
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-[#002587] transition-colors">
-                                  {post.title}
-                                </h3>
-                                <p className="text-sm text-gray-500 line-clamp-2 mb-4 font-medium">
-                                  {post.content}
-                                </p>
-                                <div className="flex items-center gap-6">
-                                  <span className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                    <MessageSquare size={12} />
-                                    {post.replies_count || 0} Balasan
-                                  </span>
-                                  <span className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                    <Clock size={12} />
-                                    5m lalu
-                                  </span>
-                                </div>
-                              </div>
-                              <button className="text-gray-300 hover:text-gray-900 transition-colors">
-                                <MoreVertical size={18} />
-                              </button>
-                            </div>
-                          </div>
-                        ))
+                    <div className="space-y-3">
+                      {isLoading ? (
+                        <div className="py-32 flex flex-col items-center gap-4">
+                           <Loader2 className="animate-spin text-blue-200" size={40} strokeWidth={1.5} />
+                           <p className="text-xs font-bold text-gray-300">Mengakses catatan</p>
+                        </div>
+                      ) : tickets.length === 0 ? (
+                        <div className="py-40 bg-white border border-dashed border-gray-200 rounded-3xl flex flex-col items-center gap-6 grayscale opacity-40">
+                           <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center border border-gray-100">
+                              <Ticket size={32} className="text-gray-300" />
+                           </div>
+                           <p className="text-sm font-bold text-gray-400 font-title">Belum ada tiket ditemukan</p>
+                        </div>
                       ) : (
-                        <div className="text-center py-20 bg-gray-50 rounded-lg border border-gray-100 border-dashed">
-                          <MessageSquare className="w-10 h-10 text-gray-300 mx-auto mb-4" />
-                          <h3 className="font-bold text-gray-900 mb-1">
-                            Belum Ada Diskusi
-                          </h3>
-                          <p className="text-xs text-gray-400">
-                            Jadilah yang pertama untuk memulai percakapan.
-                          </p>
+                        <div className="bg-white border border-gray-100 rounded-3xl shadow-xl shadow-gray-200/40 overflow-hidden divide-y divide-gray-50">
+                           {tickets.map((ticket) => {
+                             const status = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.pending;
+                             return (
+                               <button 
+                                 key={ticket.id}
+                                 onClick={() => setSelectedTicketId(ticket.id)}
+                                 className={`w-full flex md:items-center justify-between py-6 px-8 hover:bg-gray-50 transition-all group text-left ${selectedTicketId === ticket.id ? "bg-blue-50/30" : ""}`}
+                               >
+                                 <div className="flex-1 pr-6 space-y-2">
+                                    <h3 className="text-base font-bold text-gray-900 group-hover:text-[#002587] transition-colors truncate max-w-lg font-title">
+                                       {ticket.subject}
+                                    </h3>
+                                    <div className="flex items-center gap-4">
+                                       <span className="text-[11px] font-bold text-[#002587] bg-blue-50 px-2 py-0.5 rounded">#{ticket.id.slice(0, 8)}</span>
+                                       <span className="text-[11px] font-semibold text-gray-400">{formatDate(ticket.created_at)}</span>
+                                    </div>
+                                 </div>
+                                 <div className="shrink-0 flex items-center gap-6">
+                                    <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold ${status.bg} ${status.text} border border-transparent group-hover:border-current/10`}>
+                                       <div className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
+                                       {status.label}
+                                    </span>
+                                    <ArrowRight size={18} className={`text-gray-200 transition-all ${selectedTicketId === ticket.id ? "translate-x-1 text-[#002587]" : "group-hover:translate-x-1 group-hover:text-gray-400"}`} />
+                                 </div>
+                               </button>
+                             );
+                           })}
                         </div>
                       )}
                     </div>
                   )}
-
-                  <div className="pt-8 flex justify-center">
-                    <button className="px-10 py-4 border border-gray-100 text-[#002587] rounded-lg text-xs font-bold hover:bg-gray-50 transition-all uppercase tracking-widest">
-                      Lihat Diskusi Lainnya
-                    </button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="delete"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="space-y-12"
+                >
+                  <div className="space-y-4">
+                    <h1 className="text-3xl font-bold text-gray-900 font-title tracking-tight">Penghapusan Akun</h1>
+                    <p className="text-sm text-gray-500 font-medium">Penghapusan data permanen dari basis data kami</p>
                   </div>
-                </div>
-              </div>
-            </motion.div>
+
+                  {isDelSuccess ? (
+                    <motion.div 
+                      initial={{ scale: 0.98 }} animate={{ scale: 1 }}
+                      className="bg-white border border-gray-100 p-16 rounded-3xl text-center shadow-xl shadow-gray-200/50 space-y-8"
+                    >
+                       <div className="w-20 h-20 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-green-100">
+                          <CheckCircle2 size={32} className="text-green-600" />
+                       </div>
+                       <h2 className="text-2xl font-bold font-title text-gray-900">Permintaan Diterima</h2>
+                       <p className="text-sm text-gray-500 max-w-sm mx-auto font-medium leading-relaxed">
+                         Proses penghapusan telah dimulai. Ini biasanya memakan waktu 3-5 hari kerja. Email konfirmasi akan dikirim ke {user.email}.
+                       </p>
+                       <button onClick={() => setIsDelSuccess(false)} className="text-xs font-bold text-[#002587] hover:underline pt-4">
+                         Kirim permintaan lain
+                       </button>
+                    </motion.div>
+                  ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
+                       <div className="lg:col-span-2 space-y-8">
+                          <div className="p-8 bg-amber-50 rounded-2xl border border-amber-100 space-y-6">
+                             <div className="flex items-center gap-3 text-amber-700">
+                                <AlertTriangle size={24} />
+                                <span className="text-sm font-bold font-title">Pemberitahuan Penting</span>
+                             </div>
+                             <p className="text-sm text-amber-900/70 font-semibold leading-relaxed">
+                               Menghapus akun Anda bersifat permanen dan tidak dapat dibatalkan. Semua riwayat, pengaturan, dan catatan akademik yang terkait dengan ID ini akan dihapus.
+                             </p>
+                          </div>
+                          <div className="space-y-4 pt-4 px-2">
+                             <div className="flex items-center gap-3">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#002587]" />
+                                <span className="text-[11px] font-bold text-gray-400">ID Login Aktif</span>
+                             </div>
+                             <div className="text-sm font-bold text-gray-700 tracking-tight">{user.email}</div>
+                          </div>
+                       </div>
+
+                       <div className="lg:col-span-3">
+                          <form onSubmit={handleDeleteRequest} className="bg-white border border-gray-100 p-10 rounded-3xl shadow-xl shadow-gray-200/30 space-y-10">
+                            <div className="space-y-4">
+                              <label className="text-xs font-bold text-gray-500 ml-1">Alasan berhenti</label>
+                              <textarea 
+                                value={delReason}
+                                onChange={(e) => setDelReason(e.target.value)}
+                                placeholder="Beri tahu kami alasan Anda berhenti (Min. 10 karakter)"
+                                className="w-full text-sm font-bold p-6 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:border-[#002587] transition-all outline-none min-h-[160px] resize-none placeholder:text-gray-200"
+                                required
+                              />
+                            </div>
+                            <div className="space-y-4">
+                              <label className="text-xs font-bold text-gray-500 ml-1">Tanda tangan konfirmasi</label>
+                              <input 
+                                type="text"
+                                value={delConfirm}
+                                onChange={(e) => setDelConfirm(e.target.value)}
+                                placeholder="Ketik 'HAPUS AKUN' dengan tepat"
+                                className="w-full text-sm font-bold p-6 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:border-[#002587] transition-all outline-none placeholder:text-gray-200"
+                                required
+                              />
+                            </div>
+
+                            {delError && (
+                              <div className="p-5 bg-red-50 text-red-600 text-xs font-bold rounded-xl border border-red-100">
+                                {delError}
+                              </div>
+                            )}
+
+                            <button 
+                              type="submit"
+                              disabled={isDelLoading || delConfirm.toUpperCase() !== "HAPUS AKUN" || delReason.length < 10}
+                              className="w-full py-5 bg-red-700 text-white text-xs font-bold rounded-2xl hover:bg-black transition-all disabled:bg-gray-100 disabled:text-gray-300 shadow-lg shadow-red-900/10"
+                            >
+                              {isDelLoading ? <Loader2 size={18} className="animate-spin" /> : "Verifikasi dan Hapus Akun"}
+                            </button>
+                          </form>
+                       </div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {selectedTicketId && activeTicket && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedTicketId(null)}
+                className="fixed inset-0 bg-black/30 backdrop-blur-[4px] z-[110]"
+              />
+              <motion.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", damping: 35, stiffness: 350 }}
+                className="fixed top-0 right-0 bottom-0 w-full sm:w-[540px] md:w-[640px] z-[120] shadow-2xl"
+              >
+                <TicketDetails 
+                  ticket={activeTicket} 
+                  onClose={() => setSelectedTicketId(null)}
+                  userId={user.id}
+                  onReplyAdded={(tid, reply) => {
+                    setTickets(prev => prev.map(t => t.id === tid ? { ...t, replies: [...(t.replies ?? []), reply] } : t));
+                  }}
+                />
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </main>
+
+      <footer className="px-10 py-8 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between text-gray-400 gap-4">
+         <p className="text-[10px] font-bold font-title">
+            Satu Teladan Support Hub &copy; {new Date().getFullYear()}
+         </p>
+         <div className="flex gap-8">
+            <span className="text-[10px] font-bold hover:text-[#002587] cursor-pointer transition-colors">Infrastruktur Keamanan</span>
+            <span className="text-[10px] font-bold hover:text-[#002587] cursor-pointer transition-colors">Privasi Data</span>
+         </div>
+      </footer>
     </div>
   );
 }

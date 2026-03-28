@@ -19,8 +19,8 @@ interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   signOut: () => Promise<void>;
-  activeTab: "support" | "forum";
-  setActiveTab: (tab: "support" | "forum") => void;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
   isPortal: boolean;
   setIsPortal: (val: boolean) => void;
 }
@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<any | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"support" | "forum">("support");
+  const [activeTab, setActiveTab] = useState<string>("support");
   const [isPortal, setIsPortal] = useState(false);
   const router = useRouter();
 
@@ -45,37 +45,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const fetchSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchProfile();
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        
+        // Immediately stop loading once we know if we have a user or not
+        setIsLoading(false);
+        
+        if (currentUser) {
+          // Profile can load in the background
+          fetchProfile().catch(err => console.error("Profile fetch error:", err));
+        }
+      } catch (error) {
+        console.error("Auth initialization error:", error);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
-    fetchSession();
+    initializeAuth();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      // Stop loading immediately
+      setIsLoading(false);
+      
       if (session?.user) {
-        await fetchProfile();
+        fetchProfile().catch(err => console.error("Auth state change profile error:", err));
       } else {
         setProfile(null);
       }
-      setIsLoading(false);
     });
 
     return () => {
       subscription.unsubscribe();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const signOut = async () => {
