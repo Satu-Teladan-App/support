@@ -35,6 +35,8 @@ const STATUS_CONFIG: Record<
 > = {
   pending: { label: "Pending", bg: "bg-amber-50", text: "text-amber-600" },
   open: { label: "Open", bg: "bg-blue-50", text: "text-blue-600" },
+  in_progress: { label: "In Progress", bg: "bg-sky-50", text: "text-sky-600" },
+  resolved: { label: "Resolved", bg: "bg-green-50", text: "text-green-600" },
   closed: { label: "Closed", bg: "bg-gray-100", text: "text-gray-500" },
 };
 
@@ -223,7 +225,7 @@ function TicketDetailPanel({
             Ubah Status
           </p>
           <div className="flex flex-wrap gap-2">
-            {(["pending", "open", "closed"] as TicketStatus[]).map((s) => (
+            {(["pending", "open", "in_progress", "resolved", "closed"] as TicketStatus[]).map((s) => (
               <button
                 key={s}
                 onClick={() => handleStatusChange(s)}
@@ -308,6 +310,8 @@ export default function AdminSupportPage() {
     all: tickets.length,
     pending: tickets.filter((t) => t.status === "pending").length,
     open: tickets.filter((t) => t.status === "open").length,
+    in_progress: tickets.filter((t) => t.status === "in_progress").length,
+    resolved: tickets.filter((t) => t.status === "resolved").length,
     closed: tickets.filter((t) => t.status === "closed").length,
   };
 
@@ -394,7 +398,13 @@ export default function AdminSupportPage() {
                 color: "text-blue-600",
               },
               {
-                key: "closed",
+                key: "in_progress",
+                label: "Diproses",
+                icon: RefreshCw,
+                color: "text-sky-600",
+              },
+              {
+                key: "resolved",
                 label: "Selesai",
                 icon: CheckCircle2,
                 color: "text-green-600",
