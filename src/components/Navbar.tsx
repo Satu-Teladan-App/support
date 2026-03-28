@@ -10,6 +10,8 @@ interface NavbarProps {
   profile?: any;
   onSignOut?: () => void;
   isPortal?: boolean;
+  activeTab?: string;
+  setActiveTab?: (tab: string) => void;
 }
 
 export default function Navbar({
