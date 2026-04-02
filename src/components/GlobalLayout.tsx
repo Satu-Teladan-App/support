@@ -10,11 +10,13 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
   // Conditionally hide navbar/footer on certain pages if needed
-  const isAuthPage = pathname?.startsWith('/auth/');
+  const isAuthPage = pathname?.startsWith("/auth/");
+  const hideNavbar = isAuthPage;
+  const hideFooter = isAuthPage;
   
   return (
     <div className="flex flex-col min-h-screen">
-      {!isAuthPage && (
+      {!hideNavbar && (
         <Navbar 
           user={user} 
           profile={profile} 
@@ -24,10 +26,10 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
           setActiveTab={setActiveTab}
         />
       )}
-      <main className={`flex-grow ${!isAuthPage ? 'pt-20' : ''}`}>
+      <main className={`flex-grow ${!hideNavbar ? "pt-20" : ""}`}>
         {children}
       </main>
-      {!isAuthPage && <Footer />}
+      {!hideFooter && <Footer />}
     </div>
   );
 }

@@ -8,18 +8,19 @@ export default function TestimonialsSection() {
     <section id="testimoni" className="relative py-32 bg-white overflow-hidden">
       <div className="container mx-auto px-6 relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          viewport={{ once: true }}
-          className="text-center mb-24"
+           initial={{ opacity: 0, y: 20 }}
+           whileInView={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.8 }}
+           viewport={{ once: true }}
+           className="text-center mb-24"
         >
-          <div className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.6em] mb-6">FEEDBACK</div>
-          <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-[#002587] mb-8 uppercase leading-none">
-            KATA MEREKA
+          <div className="text-base font-bold text-blue-600 mb-6 font-sans tracking-wide">Testimonial alumni</div>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 leading-tight">
+            Cerita jaringan <br /> 
+            <span className="text-blue-700">keluarga besar teladan</span>
           </h2>
-          <p className="text-sm md:text-base text-gray-400 max-w-2xl mx-auto uppercase tracking-[0.4em] font-bold opacity-70">
-            CERITA DARI KELUARGA BESAR ALUMNI TELADAN.
+          <p className="text-gray-500 text-lg md:text-2xl font-medium max-w-3xl mx-auto mt-10 leading-relaxed font-sans">
+            Dengarkan pengalaman langsung dari alumni lintas angkatan yang telah merasakan manfaat nyata dari platform Satu Teladan.
           </p>
         </motion.div>
 

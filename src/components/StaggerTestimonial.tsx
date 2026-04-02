@@ -153,13 +153,13 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ position, testimonial
         />
         <div className={cn("absolute -top-4 -left-4 w-8 h-8 rounded-lg flex items-center justify-center font-black text-2xl opacity-20", isCenter ? "text-white" : "text-[#002587]")}>"</div>
       </div>
-      <h3 className={cn("text-lg sm:text-2xl font-bold leading-tight uppercase tracking-tight", isCenter ? "text-white" : "text-[#002587]")}>
+      <h3 className={cn("text-xl md:text-2xl font-bold leading-tight tracking-tight", isCenter ? "text-white" : "text-blue-900")}>
         {testimonial.testimonial}
       </h3>
       <p
         className={cn(
-          "absolute bottom-10 left-10 right-10 text-[10px] font-bold uppercase tracking-[0.2em]",
-          isCenter ? "text-white/60" : "text-gray-400",
+          "absolute bottom-10 left-10 right-10 text-base font-bold tracking-wide transition-colors",
+          isCenter ? "text-white/70" : "text-gray-400",
         )}
       >
         — {testimonial.by}

@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="relative bg-white border-t border-gray-50 overflow-hidden">
+    <footer id="footer" className="relative bg-white border-t border-gray-50 overflow-hidden">
       {/* Subtle Grid Pattern */}
       <div className="absolute inset-0 bg-grid-subtle opacity-10 pointer-events-none" />
 
@@ -21,21 +21,21 @@ export default function Footer() {
             viewport={{ once: true }}
             className="lg:col-span-2"
           >
-            <h3 className="text-3xl md:text-4xl font-bold tracking-tighter text-[#002587] mb-6 animate-fade-in">
+            <h3 className="text-3xl md:text-5xl font-bold tracking-tight text-blue-700 mb-8">
               Satu Teladan
             </h3>
-            <p className="text-sm text-gray-400 leading-relaxed mb-10 max-w-sm tracking-widest font-bold opacity-70">
+            <p className="text-base text-gray-500 leading-relaxed mb-10 max-w-sm font-medium">
               Aplikasi resmi keluarga besar SMA Negeri 1 Yogyakarta.
               Menghubungkan alumni, siswa, guru, dan orang tua dalam satu
               platform untuk membangun jaringan yang kuat dan bermakna.
             </p>
 
-            <div className="flex flex-wrap gap-4 mb-10">
+            <div className="flex flex-wrap gap-5 mb-10">
               <a
                 href="https://apps.apple.com/app/satu-teladan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 px-8 py-4 bg-[#002587] text-white rounded-lg hover:bg-[#001d6b] transition-all text-[10px] font-bold tracking-[0.3em] shadow-lg shadow-[#002587]/20"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all text-base font-bold shadow-lg shadow-blue-500/10"
               >
                 App Store
               </a>
@@ -43,30 +43,30 @@ export default function Footer() {
                 href="https://play.google.com/store/apps/details?id=com.satuteladan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 px-8 py-4 bg-white text-[#002587] border border-[#002587]/20 rounded-lg hover:bg-gray-50 transition-all text-[10px] font-bold tracking-[0.3em] shadow-md"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-white text-blue-600 border border-blue-100 rounded-xl hover:bg-gray-50 transition-all text-base font-bold shadow-sm"
               >
                 Play Store
               </a>
             </div>
 
-            <div className="flex space-x-5">
+            <div className="flex space-x-6">
               <a
                 href="https://www.instagram.com/satuteladan/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-12 h-12 bg-white border border-gray-100 hover:border-[#002587] text-gray-400 hover:text-[#002587] rounded-lg flex items-center justify-center transition-all shadow-sm"
+                className="w-14 h-14 bg-white border border-gray-100 hover:border-blue-600 text-gray-400 hover:text-blue-600 rounded-xl flex items-center justify-center transition-all shadow-sm"
                 aria-label="Instagram"
               >
-                <Instagram size={18} />
+                <Instagram size={22} />
               </a>
               <a
                 href="https://www.facebook.com/satuteladan/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-12 h-12 bg-white border border-gray-100 hover:border-[#002587] text-gray-400 hover:text-[#002587] rounded-lg flex items-center justify-center transition-all shadow-sm"
+                className="w-14 h-14 bg-white border border-gray-100 hover:border-blue-600 text-gray-400 hover:text-blue-600 rounded-xl flex items-center justify-center transition-all shadow-sm"
                 aria-label="Facebook"
               >
-                <Facebook size={18} />
+                <Facebook size={22} />
               </a>
             </div>
           </motion.div>
@@ -78,14 +78,14 @@ export default function Footer() {
             transition={{ duration: 0.6, delay: 0.1 }}
             viewport={{ once: true }}
           >
-            <h4 className="text-[10px] font-bold text-gray-300 mb-10 tracking-[0.5em]">
-              Tautan
+            <h4 className="text-base font-bold text-gray-900 mb-8 tracking-wide">
+              Tautan penting
             </h4>
-            <ul className="space-y-5">
+            <ul className="space-y-4">
               <li>
                 <a
                   href="#hero"
-                  className="text-[10px] text-gray-400 hover:text-[#002587] transition-all font-bold tracking-[0.2em]"
+                  className="text-base text-gray-500 hover:text-blue-600 transition-all font-medium"
                 >
                   Beranda
                 </a>
@@ -93,33 +93,33 @@ export default function Footer() {
               <li>
                 <a
                   href="#tentang"
-                  className="text-[10px] text-gray-400 hover:text-[#002587] transition-all font-bold tracking-[0.2em]"
+                  className="text-base text-gray-500 hover:text-blue-600 transition-all font-medium"
                 >
-                  Tentang Aplikasi
+                  Tentang aplikasi
                 </a>
               </li>
               <li>
                 <a
                   href="#fitur"
-                  className="text-[10px] text-gray-400 hover:text-[#002587] transition-all font-bold tracking-[0.2em]"
+                  className="text-base text-gray-500 hover:text-blue-600 transition-all font-medium"
                 >
-                  Fitur Unggulan
+                  Fitur unggulan
                 </a>
               </li>
               <li>
                 <a
                   href="#testimoni"
-                  className="text-[10px] text-gray-400 hover:text-[#002587] transition-all font-bold tracking-[0.2em]"
+                  className="text-base text-gray-500 hover:text-blue-600 transition-all font-medium"
                 >
-                  Testimoni Alumni
+                  Testimoni alumni
                 </a>
               </li>
               <li>
                 <Link
                   href="/hapusakun"
-                  className="text-[10px] text-red-400 hover:text-red-500 transition-all font-bold tracking-[0.2em]"
+                  className="text-base text-red-500 hover:text-red-600 transition-all font-bold"
                 >
-                  Hapus Akun
+                  Hapus akun
                 </Link>
               </li>
             </ul>
@@ -132,24 +132,24 @@ export default function Footer() {
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
           >
-            <h4 className="text-[10px] font-bold text-gray-300 mb-10 tracking-[0.5em]">
-              Kontak
+            <h4 className="text-base font-bold text-gray-900 mb-8 tracking-wide">
+              Hubungi kami
             </h4>
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
                 <MapPin
-                  size={16}
-                  className="text-[#002587] mt-0.5 flex-shrink-0"
+                  size={20}
+                  className="text-blue-600 mt-0.5 flex-shrink-0"
                 />
-                <span className="text-[10px] text-gray-400 font-bold tracking-widest leading-loose">
+                <span className="text-base text-gray-500 font-medium leading-relaxed">
                   Yogyakarta, Indonesia
                 </span>
               </div>
               <div className="flex items-center space-x-4">
-                <Mail size={16} className="text-[#002587] flex-shrink-0" />
+                <Mail size={20} className="text-blue-600 flex-shrink-0" />
                 <a
                   href="mailto:katymentor@gmail.com"
-                  className="text-[10px] text-gray-400 hover:text-[#002587] transition-all font-bold tracking-widest"
+                  className="text-base text-gray-500 hover:text-blue-600 transition-all font-medium"
                 >
                   katymentor@gmail.com
                 </a>
@@ -164,25 +164,25 @@ export default function Footer() {
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
           viewport={{ once: true }}
-          className="border-t border-gray-50 pt-10 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0"
+          className="border-t border-gray-100 pt-12 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0"
         >
-          <p className="text-[10px] font-bold text-gray-300 tracking-widest">
-            © 2026 Satu Teladan. Hak Cipta Dilindungi.
+          <p className="text-base font-medium text-gray-400">
+            © 2026 Satu Teladan. Hak cipta dilindungi.
           </p>
 
-          <div className="flex space-x-8">
-            <a
-              href="#"
-              className="text-[10px] font-bold text-gray-300 hover:text-[#002587] transition-all tracking-widest"
+          <div className="flex space-x-10">
+            <Link
+              href="/privacy"
+              className="text-base font-bold text-gray-400 hover:text-blue-600 transition-all"
             >
-              Kebijakan Privasi
-            </a>
-            <a
-              href="#"
-              className="text-[10px] font-bold text-gray-300 hover:text-[#002587] transition-all tracking-widest"
+              Kebijakan privasi
+            </Link>
+            <Link
+              href="/tos"
+              className="text-base font-bold text-gray-400 hover:text-blue-600 transition-all"
             >
-              Syarat & Ketentuan
-            </a>
+              Syarat & ketentuan
+            </Link>
           </div>
         </motion.div>
 
