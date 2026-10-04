@@ -7,7 +7,7 @@ interface DeletionRequestData {
 
 interface DeletionRequest {
   id: string
-  user_id: string
+  user_id: string | null
   reason: string | null
   status: string
   requested_at: string

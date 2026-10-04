@@ -10,7 +10,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 interface DeletionRequest {
   id: string;
-  user_id: string;
+  user_id: string | null; // null once the account is deleted and the request anonymized
   reason: string | null;
   status: string;
   requested_at: string;
@@ -71,7 +71,18 @@ export default function AdminDeletionRequestsPage() {
         throw new Error("Not authenticated");
       }
 
-      const notes = prompt(`Notes for ${action}:`);
+      let notes: string | null = null;
+      if (action === "completed") {
+        if (
+          !confirm(
+            "This permanently deletes the user's account, profile, content, messages and files. Continue?"
+          )
+        ) {
+          return;
+        }
+      } else {
+        notes = prompt(`Notes for ${action}:`);
+      }
 
       const response = await fetch("/api/account-deletion/admin", {
         method: "PATCH",
@@ -86,16 +97,24 @@ export default function AdminDeletionRequestsPage() {
         }),
       });
 
+      const result = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error("Failed to process request");
+        throw new Error(result.error || "Failed to process request");
       }
 
       // Reload requests
       await loadRequests();
-      alert("Request processed successfully");
+      const failedFiles: string[] = result.storage_cleanup?.failed ?? [];
+      alert(
+        failedFiles.length > 0
+          ? `Account deleted, but these files could not be removed: ${failedFiles.join(", ")}`
+          : "Request processed successfully"
+      );
     } catch (error) {
       console.error("Error processing request:", error);
-      alert("Failed to process request");
+      alert(
+        error instanceof Error ? error.message : "Failed to process request"
+      );
     }
   }
 
@@ -135,6 +154,9 @@ export default function AdminDeletionRequestsPage() {
                 User ID
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Email
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Reason
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -151,7 +173,7 @@ export default function AdminDeletionRequestsPage() {
           <tbody className="divide-y divide-gray-200">
             {requests.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                   No requests found
                 </td>
               </tr>
@@ -159,7 +181,15 @@ export default function AdminDeletionRequestsPage() {
               requests.map((request) => (
                 <tr key={request.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm text-gray-900 font-mono">
-                    {request.user_id.slice(0, 8)}...
+                    {request.user_id
+                      ? `${request.user_id.slice(0, 8)}...`
+                      : "Deleted"}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {/* metadata is user-supplied JSON; render the email only when it is a string */}
+                    {typeof request.metadata?.email === "string"
+                      ? request.metadata.email
+                      : "-"}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600 max-w-md truncate">
                     {request.reason || "No reason provided"}
