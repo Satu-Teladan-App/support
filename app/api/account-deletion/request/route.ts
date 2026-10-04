@@ -61,16 +61,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if there's already a pending request
+    // Check if there's already an open request (pending or approved by support)
     const { data: existingRequest, error: checkError } = await supabase
       .from("account_deletion_requests")
-      .select("*")
+      .select("id")
       .eq("user_id", user.id)
-      .eq("status", "pending")
-      .single();
+      .in("status", ["pending", "approved"])
+      .limit(1)
+      .maybeSingle();
 
-    if (checkError && checkError.code !== "PGRST116") {
-      // PGRST116 is "no rows returned" which is fine
+    if (checkError) {
       console.error("Error checking existing request:", checkError);
       return NextResponse.json(
         { error: "Terjadi kesalahan saat memeriksa permintaan yang ada" },

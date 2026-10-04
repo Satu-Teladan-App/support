@@ -83,6 +83,7 @@ Complete backend implementation for handling user account deletion requests.
 - **Method**: GET
 - **Purpose**: List all deletion requests (admin only)
 - **Headers**: `Authorization: Bearer <admin_token>`
+- **Admin**: a user with an `admin_roles` row, the same check as `public.is_admin()` and admin-dashboard. Other signed-in users get 403.
 - **Query Parameters**:
   - `status`: Filter by status (pending/approved/rejected/completed/all)
   - `limit`: Number of results (default: 50)
@@ -118,6 +119,10 @@ Complete backend implementation for handling user account deletion requests.
 }
 ```
 
+- `approved` / `rejected`: only for `pending` requests. The notes and the admin's email are added to `metadata`; the requester's email stays there so support can contact them.
+- `completed`: only for `approved` requests. The API calls `public.delete_user_account()`, which deletes the account and its data in one transaction and anonymizes the request, then removes the user's files through the Storage API. The response includes `storage_cleanup: { removed, failed }`.
+- Any other transition returns 409.
+
 ## 🗄️ Database Schema
 
 ### Table: `account_deletion_requests`
@@ -125,13 +130,13 @@ Complete backend implementation for handling user account deletion requests.
 | Column       | Type      | Description                            |
 | ------------ | --------- | -------------------------------------- |
 | id           | UUID      | Primary key                            |
-| user_id      | UUID      | Foreign key to auth.users              |
-| reason       | TEXT      | User's reason for deletion             |
-| status       | TEXT      | pending/approved/rejected/completed    |
+| user_id      | UUID      | Foreign key to auth.users; null once the account is deleted |
+| reason       | TEXT      | User's reason for deletion; removed on completion |
+| status       | TEXT      | pending/approved/rejected/completed (`cancelled`: superseded by another completed request) |
 | requested_at | TIMESTAMP | When request was made                  |
-| processed_at | TIMESTAMP | When request was processed             |
-| processed_by | UUID      | Admin who processed                    |
-| metadata     | JSONB     | Additional data (IP, user agent, etc.) |
+| processed_at | TIMESTAMP | When request was approved or rejected  |
+| processed_by | UUID      | Admin who approved or rejected         |
+| metadata     | JSONB     | Email, IP, user agent, admin notes; only the admin's email and completion details remain after completion |
 | created_at   | TIMESTAMP | Record creation time                   |
 | updated_at   | TIMESTAMP | Last update time                       |
 
@@ -146,8 +151,9 @@ Complete backend implementation for handling user account deletion requests.
 ### Row Level Security (RLS)
 
 - Users can only view their own deletion requests
-- Users can only create deletion requests for themselves
+- Users can only create pending deletion requests for themselves
 - Only service role can update requests (admin operations)
+- Only service role can run `delete_user_account()`, and only for approved requests
 
 ### Authentication
 
@@ -158,8 +164,9 @@ Complete backend implementation for handling user account deletion requests.
 ### Data Protection
 
 - Stores request metadata (IP, user agent) for audit trail
-- Prevents duplicate pending requests
+- Prevents a new request while one is pending or approved
 - Validates reason length (minimum 10 characters)
+- Completed requests are kept but anonymized: the user id, reason, email, IP address, user agent and admin notes are removed; the id, dates, status and approving admin stay
 
 ## 📦 Installation
 
@@ -190,6 +197,8 @@ supabase migration up
 # Or manually run the SQL in:
 # supabase/migrations/001_create_account_deletion_requests.sql
 ```
+
+Then run `supabase/migrations/004_support_approved_account_deletion.sql`. It adds the approved/rejected statuses, keeps anonymized requests after deletion, and creates `delete_user_account()`.
 
 ## 🚀 Usage
 
@@ -248,42 +257,6 @@ In `/app/api/account-deletion/request/route.ts` (line 82):
 //   template: 'deletion-request-received',
 //   data: { ...deletionRequest }
 // })
-```
-
-#### Implement Admin Role Check
-
-In `/app/api/account-deletion/admin/route.ts` (line 37):
-
-```typescript
-// Check if user has admin role
-const { data: profile } = await supabase
-  .from("profiles")
-  .select("role")
-  .eq("id", user.id)
-  .single();
-
-if (profile?.role !== "admin") {
-  return NextResponse.json(
-    { error: "Forbidden: Admin access required" },
-    { status: 403 }
-  );
-}
-```
-
-#### Implement Actual Account Deletion
-
-In `/app/api/account-deletion/admin/route.ts` (line 164):
-
-```typescript
-if (action === "completed") {
-  // 1. Delete user data from related tables
-  await supabase.from("user_profiles").delete().eq("user_id", userId);
-  await supabase.from("user_activities").delete().eq("user_id", userId);
-
-  // 2. Finally delete the auth user
-  const adminClient = createClient(url, serviceRoleKey);
-  await adminClient.auth.admin.deleteUser(userId);
-}
 ```
 
 ## 📊 Monitoring
@@ -354,14 +327,14 @@ curl -X POST \
    - Ensure service role key has proper permissions
 
 4. **"Already have pending request" error**
-   - User can only have one pending request at a time
+   - User can only have one open (pending or approved) request at a time
    - Previous request must be processed first
 
 ## 📝 TODO
 
 - [ ] Implement email notifications
 - [ ] Add admin dashboard UI
-- [ ] Implement actual account deletion logic
+- [x] Implement actual account deletion logic
 - [ ] Add rate limiting
 - [ ] Add request expiration (auto-cancel after 30 days)
 - [ ] Add audit logging
