@@ -186,7 +186,10 @@ export default function AdminDeletionRequestsPage() {
                       : "Deleted"}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
-                    {request.metadata?.email ?? "-"}
+                    {/* metadata is user-supplied JSON; render the email only when it is a string */}
+                    {typeof request.metadata?.email === "string"
+                      ? request.metadata.email
+                      : "-"}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600 max-w-md truncate">
                     {request.reason || "No reason provided"}
